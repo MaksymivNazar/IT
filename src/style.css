@@ -1,0 +1,79 @@
+/* src/style.css */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap');
+
+:root {
+  --primary: #d81b60;
+  --primary-dark: #a01346;
+  --bg: #f8f9fa;
+  --text: #333;
+  --shadow: 0 10px 30px rgba(0,0,0,0.1);
+  --card-bg: #ffffff;
+}
+
+body {
+  margin: 0;
+  font-family: 'Montserrat', sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+a { text-decoration: none; color: inherit; transition: 0.3s; }
+ul { list-style: none; padding: 0; margin: 0; }
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Анімації */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate { animation: slideUp 0.6s ease-out forwards; }
+
+/* Кнопки */
+.btn {
+  background: var(--primary);
+  color: white;
+  padding: 12px 30px;
+  border-radius: 50px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+  display: inline-block;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+}
+.btn:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(216, 27, 96, 0.3); }
+.btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+.btn-outline:hover { background: var(--primary); color: white; }
+
+/* Картки */
+.card {
+  background: var(--card-bg);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: 0.3s;
+}
+.card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+.card img { width: 100%; height: 250px; object-fit: cover; }
+.card-body { padding: 20px; }
+
+/* Форми */
+input, select {
+  width: 100%;
+  padding: 15px;
+  margin: 10px 0;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  background: #fdfdfd;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+input:focus, select:focus { outline: none; border-color: var(--primary); background: white; }

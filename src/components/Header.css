@@ -1,0 +1,95 @@
+/* src/components/Header.css */
+
+/* ВАШІ ОРИГІНАЛЬНІ СТИЛІ */
+.header { 
+    background: rgba(255,255,255,0.95); 
+    backdrop-filter: blur(10px); 
+    padding: 15px 0; 
+    position: sticky; 
+    top: 0; 
+    z-index: 100; 
+    box-shadow: 0 2px 15px rgba(0,0,0,0.05); 
+}
+.header-wrapper { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+}
+.logo a { 
+    font-size: 1.5rem; 
+    font-weight: 800; 
+    color: #d81b60; 
+    letter-spacing: -1px; 
+}
+.nav-links { 
+    display: flex; 
+    gap: 30px; 
+    font-weight: 600; 
+}
+.nav-links a {
+    color: #333; 
+    text-decoration: none;
+    transition: color 0.2s;
+}
+.nav-links a:hover { 
+    color: #d81b60; 
+}
+
+/* --- СТИЛІ ДЛЯ КОНТЕЙНЕРІВ ІКОНОК --- */
+.icon-nav {
+    display: flex;
+    gap: 12px; 
+    align-items: center;
+}
+
+.icon-item {
+    width: 40px; 
+    height: 40px;
+    border-radius: 50%;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.2s, color 0.2s;
+}
+
+/* 🔥 СТИЛЬ ДЛЯ ЗОБРАЖЕНЬ: для фотографій/зображень */
+.icon-item-img {
+    background: #f4f4f4; /* Світле тло для зображень */
+    border: 1px solid #eee;
+    overflow: hidden; /* Обрізаємо, якщо зображення вилазить */
+}
+.icon-item-img:hover {
+    background: #e0e0e0;
+}
+
+/* Переконуємося, що вставлені зображення коректно масштабуються */
+.icon-item-img img {
+    height: 60%; 
+    width: auto;
+    object-fit: contain;
+}
+
+/* Прибираємо старий стиль для шрифтових іконок, якщо вони використовувалися */
+.icon-item-light {
+    background: #f0f0f0;
+    color: #333;
+}
+.icon-item-light:hover {
+    background: #e0e0e0;
+}
+
+/* --- СТИЛЬ ДЛЯ АНІМАЦІЇ ВІДГУКІВ (Home.jsx) --- */
+@keyframes scrollReviews {
+    from {
+        /* Починаємо з самого початку */
+        transform: translateX(0);
+    }
+    to {
+        /* Зсуваємо на 50% (оскільки ми продублювали відгуки), щоб створити ефект циклу */
+        transform: translateX(-50%); 
+    }
+}
