@@ -15,11 +15,77 @@
     justify-content: space-between; 
     align-items: center; 
 }
-.logo a { 
-    font-size: 1.5rem; 
-    font-weight: 800; 
-    color: #d81b60; 
-    letter-spacing: -1px; 
+.logo {
+    position: relative;
+}
+
+.logo-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    padding: 0;
+    transition: all 0.3s ease;
+}
+
+.logo-link:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+}
+
+.logo-image {
+    height: 60px;
+    width: auto;
+    max-width: 250px;
+    object-fit: contain;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.logo-link:hover .logo-image {
+    transform: scale(1.02);
+}
+
+.logo-fallback {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(20, 20, 20, 0.95)), 
+                url('https://img.freepik.com/premium-photo/natural-black-marble-texture-skin-tile-wallpaper-luxurious-background_24076-426.jpg');
+    background-size: cover;
+    background-position: center;
+    background-blend-mode: overlay;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+.logo-icon-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.6));
+}
+
+.logo-icon-fallback svg {
+    width: 100%;
+    height: 100%;
+}
+
+.logo-text {
+    font-size: 1.4rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #FFD700, #FFA500, #FFD700);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+    font-family: 'Georgia', 'Times New Roman', serif;
+    text-transform: uppercase;
 }
 .nav-links { 
     display: flex; 
@@ -35,35 +101,38 @@
     color: #d81b60; 
 }
 
-/* --- СТИЛІ ДЛЯ КОНТЕЙНЕРІВ ІКОНОК --- */
+/* --- СТИЛІ ДЛЯ КОНТЕЙНЕРІВ ІКОНОК (Елегантний стиль маркетплейсів) --- */
+
 .icon-nav {
     display: flex;
-    gap: 12px; 
+    gap: 8px; 
     align-items: center;
 }
 
 .icon-item {
-    width: 40px; 
-    height: 40px;
+    width: 36px; 
+    height: 36px;
     border-radius: 50%;
     
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
+    font-size: 1rem;
     cursor: pointer;
     position: relative;
-    transition: background 0.2s, color 0.2s;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
 }
 
 /* 🔥 СТИЛЬ ДЛЯ ЗОБРАЖЕНЬ: для фотографій/зображень */
 .icon-item-img {
-    background: #f4f4f4; /* Світле тло для зображень */
-    border: 1px solid #eee;
-    overflow: hidden; /* Обрізаємо, якщо зображення вилазить */
+    background: #fafafa;
+    border: 1px solid #e5e5e5;
+    overflow: hidden;
 }
 .icon-item-img:hover {
-    background: #e0e0e0;
+    background: #f5f5f5;
+    border-color: #d0d0d0;
 }
 
 /* Переконуємося, що вставлені зображення коректно масштабуються */
@@ -73,13 +142,16 @@
     object-fit: contain;
 }
 
-/* Прибираємо старий стиль для шрифтових іконок, якщо вони використовувалися */
+/* Елегантний стиль для іконок (мінімалістичний, як у маркетплейсів) */
 .icon-item-light {
-    background: #f0f0f0;
-    color: #333;
+    background: transparent;
+    color: #555;
+    border: 1px solid #e5e5e5;
 }
 .icon-item-light:hover {
-    background: #e0e0e0;
+    background: #f8f8f8;
+    border-color: #d0d0d0;
+    color: #333;
 }
 
 /* --- СТИЛЬ ДЛЯ АНІМАЦІЇ ВІДГУКІВ (Home.jsx) --- */
@@ -91,5 +163,213 @@
     to {
         /* Зсуваємо на 50% (оскільки ми продублювали відгуки), щоб створити ефект циклу */
         transform: translateX(-50%); 
+    }
+}
+
+/* --- СТИЛІ ДЛЯ РЯДКА ПОШУКУ (Елегантний стиль маркетплейсів) --- */
+.search-container {
+    position: relative;
+    width: 180px;
+    margin-left: 10px;
+}
+
+.search-form {
+    display: flex;
+    align-items: center;
+    background: #fafafa;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    padding: 4px 4px 4px 8px;
+    transition: all 0.2s ease;
+}
+
+.search-form:hover {
+    background: #fff;
+    border-color: #d0d0d0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.search-form:focus-within {
+    background: #fff;
+    border-color: #999;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 0.8rem;
+    padding: 3px 5px;
+    background: transparent;
+    color: #333;
+    font-weight: 400;
+}
+
+.search-input::placeholder {
+    color: #999;
+    font-weight: 400;
+}
+
+.search-button {
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    color: #666;
+    padding: 0;
+}
+
+.search-button:hover {
+    background: #f0f0f0;
+    color: #333;
+}
+
+/* Випадаючий список результатів */
+.search-results-dropdown {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 1000;
+    margin-top: 5px;
+}
+
+.search-results-section {
+    padding: 10px 0;
+}
+
+.search-results-title {
+    padding: 8px 15px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: #f8f8f8;
+    border-bottom: 1px solid #eee;
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.search-result-item:hover {
+    background: #f8f8f8;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-result-icon {
+    font-size: 1.3rem;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.search-result-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.search-result-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.95rem;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.search-result-desc {
+    font-size: 0.85rem;
+    color: #666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.search-no-results {
+    padding: 20px;
+    text-align: center;
+    color: #999;
+    font-size: 0.9rem;
+}
+
+/* --- СТИЛІ ДЛЯ БЕЙДЖІВ (Елегантні, мінімалістичні) --- */
+.icon-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0 4px;
+    border: 1.5px solid #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.icon-badge-green {
+    background: #4CAF50;
+    color: #fff;
+}
+
+.icon-badge-pink {
+    background: #d81b60;
+    color: #fff;
+}
+
+/* Адаптивність для мобільних */
+@media (max-width: 768px) {
+    .search-container {
+        width: 150px;
+        margin-left: 8px;
+    }
+    
+    .search-input {
+        font-size: 0.75rem;
+        padding: 3px 5px;
+    }
+    
+    .search-input::placeholder {
+        font-size: 0.7rem;
+    }
+    
+    .search-button {
+        width: 18px;
+        height: 18px;
+        font-size: 0.7rem;
+    }
+    
+    .icon-item {
+        width: 32px;
+        height: 32px;
+        font-size: 0.95rem;
     }
 }

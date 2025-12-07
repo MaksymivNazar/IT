@@ -10,7 +10,8 @@ import {
     getAppointmentsDB, 
     updateAppointmentStatus, 
     servicesData, 
-    mastersData   
+    mastersData,
+    updateJWTToken
 } from './Auth'; 
 
 
@@ -30,17 +31,25 @@ export const PALETTE = {
 
 export const STYLES = { 
     pageContainer: {
-        padding: '60px 20px',
-        maxWidth: '900px',
+        padding: '40px 20px',
+        maxWidth: '1000px',
         margin: '0 auto',
-        backgroundColor: PALETTE.background,
-        fontFamily: 'Georgia, "Times New Roman", Times, serif',
+        backgroundImage: `radial-gradient(ellipse at center, rgba(255, 255, 255, 0.7) 0%, rgba(255, 240, 250, 0.85) 50%, rgba(255, 230, 245, 0.9) 100%), url('https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=2000&auto=format&fit=crop')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+        backgroundRepeat: 'no-repeat',
+        fontFamily: '"Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        minHeight: '100vh',
+        position: 'relative',
+        width: '100%',
     },
     header: {
-        color: PALETTE.primary,
-        fontSize: '2.5rem',
+        color: '#d81b60',
+        fontSize: 'clamp(2rem, 4vw, 2.8rem)',
         textAlign: 'center',
         marginBottom: '40px',
+        fontWeight: 700,
     },
     sectionTitle: {
         color: PALETTE.textDark,
@@ -51,15 +60,16 @@ export const STYLES = {
         paddingBottom: '10px',
     },
     profileInfo: {
-        background: '#fcfcfc',
-        border: `1px solid ${PALETTE.secondary}`,
-        borderRadius: '12px',
-        padding: '30px',
-        boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '15px',
+        background: 'white',
+        border: '1px solid #e0e0e0',
+        borderRadius: '16px',
+        padding: '40px',
+        boxShadow: '0 8px 30px rgba(0,0,0,0.08)',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+        gap: '25px',
         position: 'relative',
+        transition: 'all 0.3s ease',
     },
     label: {
         fontWeight: 'bold',
@@ -69,11 +79,13 @@ export const STYLES = {
     },
     input: {
         width: '100%',
-        padding: '10px',
-        border: `1px solid ${PALETTE.secondary}`,
-        borderRadius: '6px',
+        padding: '12px 16px',
+        border: '1px solid #ddd',
+        borderRadius: '8px',
         fontSize: '1rem',
         boxSizing: 'border-box',
+        transition: 'all 0.3s ease',
+        backgroundColor: '#fff',
     },
     baseButton: {
         padding: '12px 25px',
@@ -92,19 +104,25 @@ export const STYLES = {
         position: 'absolute',
         top: '20px',
         right: '20px',
-        background: PALETTE.secondary,
-        color: PALETTE.textDark,
-        padding: '8px 15px',
-        borderRadius: '6px',
+        background: '#d81b60',
+        color: 'white',
+        padding: '10px 20px',
+        borderRadius: '8px',
         cursor: 'pointer',
         border: 'none',
-        fontWeight: 'bold', // 💡 ДОДАНО: Для кращого вигляду без іконки
+        fontWeight: 600,
+        fontSize: '0.9rem',
+        transition: 'all 0.3s ease',
+        boxShadow: '0 2px 8px rgba(216, 27, 96, 0.3)',
     },
     saveButton: {
-        background: PALETTE.primary,
-        color: PALETTE.textLight,
+        background: '#d81b60',
+        color: 'white',
         marginTop: '20px',
-        alignSelf: 'flex-start',
+        padding: '12px 30px',
+        fontSize: '1rem',
+        boxShadow: '0 4px 15px rgba(216, 27, 96, 0.4)',
+        transition: 'all 0.3s ease',
     },
     cancelAppointmentButton: { 
         background: PALETTE.error,
@@ -157,26 +175,36 @@ export const STYLES = {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        marginBottom: '30px',
+        marginBottom: '40px',
+        padding: '30px',
+        background: 'white',
+        borderRadius: '20px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
     },
     avatar: {
-        width: '120px',
-        height: '120px',
+        width: '150px',
+        height: '150px',
         borderRadius: '50%',
         objectFit: 'cover',
-        border: `4px solid ${PALETTE.primary}`,
-        marginBottom: '15px',
+        border: '4px solid #d81b60',
+        marginBottom: '20px',
+        boxShadow: '0 4px 15px rgba(216, 27, 96, 0.3)',
+        transition: 'transform 0.3s ease',
     },
     avatarUploadLabel: {
         cursor: 'pointer',
-        color: PALETTE.primary,
-        fontWeight: 'bold',
-        textDecoration: 'underline',
+        color: '#d81b60',
+        fontWeight: 600,
+        padding: '10px 20px',
+        borderRadius: '8px',
+        border: '2px solid #d81b60',
+        transition: 'all 0.3s ease',
+        display: 'inline-block',
     },
 };
 
 
-const Profile = ({ user, onLogout, onUpdateUser, setSuccessModalData }) => {
+const Profile = ({ user, onLogout, onUpdateUser, setSuccessModalData, openInfoModal }) => {
     const navigate = useNavigate();
 
     const [isEditing, setIsEditing] = useState(false);
@@ -261,27 +289,107 @@ const Profile = ({ user, onLogout, onUpdateUser, setSuccessModalData }) => {
     };
     
     const handleSave = () => {
-        const updatedUser = { ...user, ...editFormData, avatar: avatarUrl };
-        saveUsersDB(updatedUser);
-        if (onUpdateUser) {
-            onUpdateUser(updatedUser);
+        try {
+            const updatedUser = { ...user, ...editFormData, avatar: avatarUrl };
+            
+            // Отримуємо всіх користувачів з бази
+            const users = getUsersDB();
+            
+            // Знаходимо індекс поточного користувача
+            const userIndex = users.findIndex(u => String(u.id) === String(user.id));
+            
+            if (userIndex !== -1) {
+                // Оновлюємо користувача в масиві
+                users[userIndex] = updatedUser;
+                // Зберігаємо оновлений масив користувачів
+                saveUsersDB(users);
+            } else {
+                // Якщо користувача не знайдено, додаємо його
+                saveUsersDB([...users, updatedUser]);
+            }
+            
+            // Оновлюємо JWT токен з новими даними
+            updateJWTToken(updatedUser);
+            
+            // Оновлюємо localStorage
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            
+            if (onUpdateUser) {
+                onUpdateUser(updatedUser);
+            }
+            setIsEditing(false);
+            
+            // Використовуємо openInfoModal або window.alert
+            if (openInfoModal) {
+                openInfoModal({ 
+                    title: "Профіль оновлено! ✅", 
+                    message: "Дані профілю успішно оновлено та збережено в JWT токені!" 
+                });
+            } else if (window.alert) {
+                window.alert("Дані профілю успішно оновлено та збережено в JWT токені!");
+            }
+        } catch (error) {
+            console.error('Помилка при збереженні профілю:', error);
+            if (openInfoModal) {
+                openInfoModal({ 
+                    title: "Помилка ❌", 
+                    message: 'Помилка при збереженні профілю. Спробуйте ще раз.' 
+                });
+            } else if (window.alert) {
+                window.alert('Помилка при збереженні профілю. Спробуйте ще раз.');
+            }
         }
-        setIsEditing(false);
-        alert("Дані профілю успішно оновлено!");
     };
     
     // --- ЛОГІКА АВАТАРКИ ---
     const handleAvatarChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            const newAvatarUrl = URL.createObjectURL(file);
-            setAvatarUrl(newAvatarUrl); 
-            const updatedUser = { ...user, avatar: newAvatarUrl };
-            saveUsersDB(updatedUser);
-            if (onUpdateUser) {
-                onUpdateUser(updatedUser);
+            try {
+                const newAvatarUrl = URL.createObjectURL(file);
+                setAvatarUrl(newAvatarUrl); 
+                const updatedUser = { ...user, avatar: newAvatarUrl };
+                
+                // Отримуємо всіх користувачів з бази
+                const users = getUsersDB();
+                
+                // Знаходимо індекс поточного користувача
+                const userIndex = users.findIndex(u => String(u.id) === String(user.id));
+                
+                if (userIndex !== -1) {
+                    // Оновлюємо користувача в масиві
+                    users[userIndex] = updatedUser;
+                    // Зберігаємо оновлений масив користувачів
+                    saveUsersDB(users);
+                } else {
+                    // Якщо користувача не знайдено, додаємо його
+                    saveUsersDB([...users, updatedUser]);
+                }
+                
+                // Оновлюємо JWT токен з новою аватаркою
+                updateJWTToken(updatedUser);
+                
+                // Оновлюємо localStorage
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+                
+                if (onUpdateUser) {
+                    onUpdateUser(updatedUser);
+                }
+                // Використовуємо openInfoModal або window.alert
+                if (openInfoModal) {
+                    openInfoModal({ 
+                        title: "Аватар оновлено! 📸", 
+                        message: "Аватарку оновлено та збережено в JWT токені!" 
+                    });
+                } else if (window.alert) {
+                    window.alert("Аватарку оновлено та збережено в JWT токені!");
+                }
+            } catch (error) {
+                console.error('Помилка при зміні аватарки:', error);
+                if (window.alert) {
+                    window.alert('Помилка при зміні аватарки. Спробуйте ще раз.');
+                }
             }
-            alert("Аватарку оновлено! (Імітація)"); 
         }
     };
 
@@ -316,24 +424,82 @@ const Profile = ({ user, onLogout, onUpdateUser, setSuccessModalData }) => {
     };
 
     const isMaster = user.role === 'master';
+    const isAdmin = user.role === 'admin';
+
+    const marbleBackgroundUrl = 'https://abrakadabra.fun/uploads/posts/2022-01/1642320157_1-abrakadabra-fun-p-krasivii-mramornii-fon-1.jpg';
 
     return (
-        <div style={STYLES.pageContainer}>
+        <div style={{ 
+            width: '100%', 
+            minHeight: '100vh',
+            backgroundImage: `url('${marbleBackgroundUrl}')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundAttachment: 'fixed',
+            backgroundRepeat: 'no-repeat',
+        }}>
+            <div style={STYLES.pageContainer}>
             <h1 style={STYLES.header}>
-                {isMaster ? `Панель Майстра: ${user.firstName}` : `Профіль Користувача: ${user.firstName}`}
+                {isAdmin ? `Панель Адміністратора: ${user.firstName}` : isMaster ? `Панель Майстра: ${user.firstName}` : `Профіль Користувача: ${user.firstName}`}
             </h1>
             
             {/* БЛОК АВАТАРКИ */}
             <div style={STYLES.avatarContainer}>
-                <img src={avatarUrl} alt="Аватар" style={STYLES.avatar} />
-                <label style={STYLES.avatarUploadLabel}>
+                <div style={{ position: 'relative', display: 'inline-block' }}>
+                    <img 
+                        src={avatarUrl} 
+                        alt="Аватар" 
+                        style={STYLES.avatar}
+                        onMouseEnter={(e) => {
+                            if (!isEditing) {
+                                e.target.style.transform = 'scale(1.05)';
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.transform = 'scale(1)';
+                        }}
+                    />
+                    {isEditing && (
+                        <div style={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            background: 'rgba(0,0,0,0.6)',
+                            borderRadius: '50%',
+                            width: '150px',
+                            height: '150px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            opacity: 0,
+                            transition: 'opacity 0.3s ease',
+                            pointerEvents: 'none'
+                        }}>
+                            <span style={{ color: 'white', fontSize: '0.9rem' }}>📷</span>
+                        </div>
+                    )}
+                </div>
+                <label 
+                    style={{
+                        ...STYLES.avatarUploadLabel,
+                    }}
+                    onMouseEnter={(e) => {
+                        e.target.style.background = '#d81b60';
+                        e.target.style.color = 'white';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.target.style.background = 'transparent';
+                        e.target.style.color = '#d81b60';
+                    }}
+                >
                     <input 
                         type="file" 
                         accept="image/*" 
                         onChange={handleAvatarChange} 
                         style={{ display: 'none' }}
                     />
-                    {user.avatar ? 'Змінити Аватарку' : 'Додати Аватарку'}
+                    {user.avatar ? '✏️ Змінити Аватарку' : '➕ Додати Аватарку'}
                 </label>
             </div>
 
@@ -343,64 +509,193 @@ const Profile = ({ user, onLogout, onUpdateUser, setSuccessModalData }) => {
             <div style={STYLES.profileInfo}>
                 
                 {!isEditing && (
-                    <button onClick={handleEditToggle} style={STYLES.editButton} title="Редагувати">
-                                Редагувати
+                    <button 
+                        onClick={handleEditToggle} 
+                        style={STYLES.editButton} 
+                        title="Редагувати"
+                        onMouseEnter={(e) => {
+                            e.target.style.background = '#a01346';
+                            e.target.style.transform = 'translateY(-2px)';
+                            e.target.style.boxShadow = '0 4px 12px rgba(216, 27, 96, 0.4)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.background = '#d81b60';
+                            e.target.style.transform = 'translateY(0)';
+                            e.target.style.boxShadow = '0 2px 8px rgba(216, 27, 96, 0.3)';
+                        }}
+                    >
+                        ✏️ Редагувати
                     </button>
                 )}
 
                 {/* Поля форми */}
-                <div>
-                    <label style={STYLES.label}>Ім'я:</label>
+                <div style={{ gridColumn: 'span 1' }}>
+                    <label style={{ ...STYLES.label, marginBottom: '8px', display: 'block', fontSize: '0.9rem', color: '#666' }}>Ім'я</label>
                     <input
                         type="text"
                         name="firstName"
                         value={editFormData.firstName || ''}
                         onChange={handleInputChange}
                         readOnly={!isEditing}
-                        style={{ ...STYLES.input, ...(isEditing ? {} : { border: 'none', background: 'none' }) }}
+                        placeholder="Введіть ім'я"
+                        style={{ 
+                            ...STYLES.input, 
+                            ...(isEditing ? { 
+                                border: '2px solid #d81b60',
+                                backgroundColor: '#fff',
+                            } : { 
+                                border: 'none', 
+                                background: 'transparent',
+                                padding: '8px 0',
+                                cursor: 'default'
+                            }) 
+                        }}
+                        onFocus={(e) => {
+                            if (isEditing) {
+                                e.target.style.borderColor = '#d81b60';
+                                e.target.style.boxShadow = '0 0 0 3px rgba(216, 27, 96, 0.1)';
+                            }
+                        }}
+                        onBlur={(e) => {
+                            if (isEditing) {
+                                e.target.style.borderColor = '#ddd';
+                                e.target.style.boxShadow = 'none';
+                            }
+                        }}
                     />
                 </div>
-                <div>
-                    <label style={STYLES.label}>Прізвище:</label>
+                <div style={{ gridColumn: 'span 1' }}>
+                    <label style={{ ...STYLES.label, marginBottom: '8px', display: 'block', fontSize: '0.9rem', color: '#666' }}>Прізвище</label>
                     <input
                         type="text"
                         name="lastName"
                         value={editFormData.lastName || ''}
                         onChange={handleInputChange}
                         readOnly={!isEditing}
-                        style={{ ...STYLES.input, ...(isEditing ? {} : { border: 'none', background: 'none' }) }}
+                        placeholder="Введіть прізвище"
+                        style={{ 
+                            ...STYLES.input, 
+                            ...(isEditing ? { 
+                                border: '2px solid #d81b60',
+                                backgroundColor: '#fff',
+                            } : { 
+                                border: 'none', 
+                                background: 'transparent',
+                                padding: '8px 0',
+                                cursor: 'default'
+                            }) 
+                        }}
+                        onFocus={(e) => {
+                            if (isEditing) {
+                                e.target.style.borderColor = '#d81b60';
+                                e.target.style.boxShadow = '0 0 0 3px rgba(216, 27, 96, 0.1)';
+                            }
+                        }}
+                        onBlur={(e) => {
+                            if (isEditing) {
+                                e.target.style.borderColor = '#ddd';
+                                e.target.style.boxShadow = 'none';
+                            }
+                        }}
                     />
                 </div>
-                <div>
-                    <label style={STYLES.label}>Телефон:</label>
+                <div style={{ gridColumn: 'span 1' }}>
+                    <label style={{ ...STYLES.label, marginBottom: '8px', display: 'block', fontSize: '0.9rem', color: '#666' }}>Телефон</label>
                     <input
-                        type="text"
+                        type="tel"
                         name="phone"
                         value={editFormData.phone || ''}
                         onChange={handleInputChange}
                         readOnly={!isEditing}
-                        style={{ ...STYLES.input, ...(isEditing ? {} : { border: 'none', background: 'none' }) }}
+                        placeholder="+380 XX XXX XX XX"
+                        style={{ 
+                            ...STYLES.input, 
+                            ...(isEditing ? { 
+                                border: '2px solid #d81b60',
+                                backgroundColor: '#fff',
+                            } : { 
+                                border: 'none', 
+                                background: 'transparent',
+                                padding: '8px 0',
+                                cursor: 'default'
+                            }) 
+                        }}
+                        onFocus={(e) => {
+                            if (isEditing) {
+                                e.target.style.borderColor = '#d81b60';
+                                e.target.style.boxShadow = '0 0 0 3px rgba(216, 27, 96, 0.1)';
+                            }
+                        }}
+                        onBlur={(e) => {
+                            if (isEditing) {
+                                e.target.style.borderColor = '#ddd';
+                                e.target.style.boxShadow = 'none';
+                            }
+                        }}
                     />
                 </div>
-                <div>
-                    <label style={STYLES.label}>Email:</label>
+                <div style={{ gridColumn: 'span 1' }}>
+                    <label style={{ ...STYLES.label, marginBottom: '8px', display: 'block', fontSize: '0.9rem', color: '#666' }}>Email</label>
                     <input
                         type="email"
                         name="email"
                         value={editFormData.email || ''}
                         readOnly
-                        style={{ ...STYLES.input, border: 'none', background: 'none' }}
+                        style={{ 
+                            ...STYLES.input, 
+                            border: 'none', 
+                            background: 'transparent',
+                            padding: '8px 0',
+                            cursor: 'not-allowed',
+                            color: '#999'
+                        }}
                     />
                 </div>
                 
                 {/* Кнопки Зберегти / Скасувати */}
                 {isEditing && (
-                    <div style={{ display: 'flex', gap: '15px', marginTop: '10px' }}>
-                        <button onClick={handleSave} style={{ ...STYLES.baseButton, ...STYLES.saveButton }}>
-                            ЗБЕРЕГТИ ЗМІНИ
+                    <div style={{ 
+                        display: 'flex', 
+                        gap: '15px', 
+                        marginTop: '20px',
+                        gridColumn: 'span 2',
+                        justifyContent: 'flex-start'
+                    }}>
+                        <button 
+                            onClick={handleSave} 
+                            style={{ 
+                                ...STYLES.baseButton, 
+                                ...STYLES.saveButton 
+                            }}
+                            onMouseEnter={(e) => {
+                                e.target.style.background = '#a01346';
+                                e.target.style.transform = 'translateY(-2px)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.target.style.background = '#d81b60';
+                                e.target.style.transform = 'translateY(0)';
+                            }}
+                        >
+                            ✅ ЗБЕРЕГТИ ЗМІНИ
                         </button>
-                        <button onClick={handleEditToggle} style={{ ...STYLES.baseButton, background: '#ccc', color: '#333' }}>
-                            Скасувати
+                        <button 
+                            onClick={handleEditToggle} 
+                            style={{ 
+                                ...STYLES.baseButton, 
+                                background: '#f0f0f0', 
+                                color: '#333',
+                                border: '1px solid #ddd',
+                                padding: '12px 30px',
+                                fontSize: '1rem',
+                            }}
+                            onMouseEnter={(e) => {
+                                e.target.style.background = '#e0e0e0';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.target.style.background = '#f0f0f0';
+                            }}
+                        >
+                            ❌ Скасувати
                         </button>
                     </div>
                 )}
@@ -449,7 +744,7 @@ const Profile = ({ user, onLogout, onUpdateUser, setSuccessModalData }) => {
                 onConfirm={handleConfirmCancel}
                 onCancel={handleCancelModal}
             />
-
+            </div>
         </div>
     );
 };

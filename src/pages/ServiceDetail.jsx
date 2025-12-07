@@ -21,8 +21,8 @@ const generateTimeSlots = (start = 10, end = 19, duration = 60) => {
     return slots;
 };
 
-// 🚨 ОНОВЛЕНО: Додано onCartUpdate
-const ServiceDetail = ({ user, onCartUpdate }) => { 
+// 🚨 ОНОВЛЕНО: Додано onCartUpdate та openInfoModal
+const ServiceDetail = ({ user, onCartUpdate, openInfoModal }) => { 
     const { slug } = useParams();
     const navigate = useNavigate();
     
@@ -60,7 +60,12 @@ const ServiceDetail = ({ user, onCartUpdate }) => {
     const handleTimeSelect = (time) => {
         setSelectedTime(time);
         if (!user) {
-            alert("Будь ласка, увійдіть, щоб завершити запис.");
+            if (openInfoModal) {
+                openInfoModal({
+                    title: "Потрібна авторизація",
+                    message: "Будь ласка, увійдіть, щоб завершити запис.",
+                });
+            }
             navigate('/auth'); 
             return;
         }
@@ -73,7 +78,12 @@ const ServiceDetail = ({ user, onCartUpdate }) => {
         }
         
         if (!user) {
-            alert("Будь ласка, увійдіть, щоб завершити запис.");
+            if (openInfoModal) {
+                openInfoModal({
+                    title: "Потрібна авторизація",
+                    message: "Будь ласка, увійдіть, щоб завершити запис.",
+                });
+            }
             navigate('/auth');
             return;
         }
@@ -91,7 +101,12 @@ const ServiceDetail = ({ user, onCartUpdate }) => {
         };
 
         saveAppointment(newAppointment); 
-        alert(`Ви успішно записані на ${service.name} до ${selectedMaster.name} ${selectedDate} о ${selectedTime}!`);
+        if (openInfoModal) {
+            openInfoModal({
+                title: "Запис успішно оформлено! ✅",
+                message: `Ви успішно записані на ${service.name} до ${selectedMaster.name} ${selectedDate} о ${selectedTime}!`,
+            });
+        }
         navigate('/profile'); 
     };
     
@@ -99,18 +114,39 @@ const ServiceDetail = ({ user, onCartUpdate }) => {
     const handleAddToCart = () => {
         const added = addToCart(service);
         if (added) {
-            alert(`Послугу "${service.name}" додано до кошика!`);
+            if (openInfoModal) {
+                openInfoModal({
+                    title: "Додано до кошика! 🛍️",
+                    message: `Послугу "${service.name}" додано до кошика!`,
+                });
+            }
             // 🔥 КЛЮЧОВА ЛОГІКА: Викликаємо оновлення лічильника
             if (onCartUpdate) {
                 onCartUpdate(); 
             }
         } else {
-            alert(`Послуга "${service.name}" вже є в кошику.`);
+            if (openInfoModal) {
+                openInfoModal({
+                    title: "Послуга вже в кошику",
+                    message: `Послуга "${service.name}" вже є в кошику.`,
+                });
+            }
         }
     };
     
     // --- Стилі для компонентів ---
-    const pageContainerStyle = { padding: '40px 20px', maxWidth: '1000px', margin: '0 auto' };
+    const pageContainerStyle = { 
+        padding: '40px 20px', 
+        maxWidth: '1000px', 
+        margin: '0 auto',
+        backgroundImage: `radial-gradient(ellipse at center, rgba(255, 255, 255, 0.7) 0%, rgba(255, 240, 245, 0.85) 50%, rgba(255, 230, 245, 0.9) 100%), url('https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?q=80&w=2000&auto=format&fit=crop')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+        backgroundRepeat: 'no-repeat',
+        minHeight: '100vh',
+        width: '100%',
+    };
     const sectionTitleStyle = { color: '#d81b60', borderBottom: '2px solid #eee', paddingBottom: '10px', marginBottom: '20px', marginTop: '40px' };
     
     // 🔥 ВИПРАВЛЕНО: Зменшено maxHeigh з 400px до 300px
@@ -174,7 +210,16 @@ const ServiceDetail = ({ user, onCartUpdate }) => {
     };
 
     return (
-        <div style={pageContainerStyle}>
+        <div style={{ 
+            width: '100%', 
+            minHeight: '100vh',
+            backgroundImage: `url('https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?q=80&w=2000&auto=format&fit=crop')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundAttachment: 'fixed',
+            backgroundRepeat: 'no-repeat',
+        }}>
+            <div style={pageContainerStyle}>
             {/* 1. Деталі Послуги */}
             <h1 style={{ color: '#333', textAlign: 'center', marginBottom: '10px' }}>{service.name}</h1>
             <p style={{ textAlign: 'center', color: '#d81b60', fontSize: '1.5rem', fontWeight: 'bold' }}>
@@ -254,6 +299,7 @@ const ServiceDetail = ({ user, onCartUpdate }) => {
                     ПІДТВЕРДИТИ ЗАПИС НА {selectedTime}
                 </button>
             )}
+            </div>
         </div>
     );
 };

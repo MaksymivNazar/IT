@@ -51,10 +51,31 @@ const Gallery = () => {
         textAlign: 'left', // Щоб назва була не по центру картки
     };
 
-    return (
-        <div className="container animate" style={{ padding: '40px 20px', textAlign: 'center' }}>
-            <h1 style={{ color: '#d81b60', marginBottom: '10px' }}>Галерея Робіт</h1>
-            <p style={{ fontSize: '1.2rem', color: '#666', marginBottom: '40px' }}>Натхнення та докази нашої майстерності.</p>
+    const pageContainerStyle = {
+        padding: '40px 20px',
+        textAlign: 'center',
+        backgroundImage: `radial-gradient(ellipse at center, rgba(255, 255, 255, 0.7) 0%, rgba(255, 245, 250, 0.85) 50%, rgba(255, 235, 245, 0.9) 100%), url('https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?q=80&w=2000&auto=format&fit=crop')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+        backgroundRepeat: 'no-repeat',
+        minHeight: '100vh',
+        width: '100%',
+    };
+
+    return (
+        <div style={{ 
+            width: '100%', 
+            minHeight: '100vh',
+            backgroundImage: `url('https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?q=80&w=2000&auto=format&fit=crop')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundAttachment: 'fixed',
+            backgroundRepeat: 'no-repeat',
+        }}>
+            <div className="container animate" style={pageContainerStyle}>
+            <h1 style={{ color: '#d81b60', marginBottom: '10px' }}>Галерея Робіт</h1>
+            <p style={{ fontSize: '1.2rem', color: '#666', marginBottom: '40px' }}>Натхнення та докази нашої майстерності.</p>
             
             <div style={galleryGridStyle}>
                 {galleryImages.map((image) => (
@@ -78,9 +99,10 @@ const Gallery = () => {
             
             {galleryImages.length === 0 && (
                  <p style={{ marginTop: '50px', fontSize: '1.5rem', color: '#aaa' }}>🖼️ Фотографії завантажуються...</p>
-            )}
-        </div>
-    );
+            )}
+            </div>
+        </div>
+    );
 };
 
 export default Gallery;

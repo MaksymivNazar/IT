@@ -72,13 +72,20 @@ const Services = ({ onCartUpdate, openInfoModal }) => {
     };
 
 
-    // --- Стилі (ОНОВЛЕНО ДЛЯ ЕЛЕГАНТНОСТІ ТА КОМПАКТНОСТІ) ---
-    const pageStyle = {
-        padding: '40px 20px',
-        maxWidth: '1200px',
-        margin: '0 auto',
-        fontFamily: 'Arial, sans-serif',
-    };
+    // --- Стилі (ОНОВЛЕНО ДЛЯ ЕЛЕГАНТНОСТІ ТА КОМПАКТНОСТІ) ---
+    const pageStyle = {
+        padding: '40px 20px',
+        maxWidth: '1200px',
+        margin: '0 auto',
+        fontFamily: 'Arial, sans-serif',
+        backgroundImage: `radial-gradient(ellipse at center, rgba(255, 255, 255, 0.7) 0%, rgba(255, 240, 245, 0.85) 50%, rgba(255, 230, 245, 0.9) 100%), url('https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=2000&auto=format&fit=crop')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+        backgroundRepeat: 'no-repeat',
+        minHeight: '100vh',
+        width: '100%',
+    };
 
     // ✅ КОМПАКТНИЙ ТА ЕЛЕГАНТНИЙ КОНТЕЙНЕР ФІЛЬТРІВ
     const filterPanelStyle = {
@@ -189,12 +196,21 @@ const Services = ({ onCartUpdate, openInfoModal }) => {
     };
 
 
-    return (
-        <div className="container animate" style={pageStyle}>
-            <h1 style={{ color: '#d81b60', textAlign: 'center', marginBottom: '10px' }}>Наші Послуги</h1>
-            <p style={{ textAlign: 'center', color: '#666', marginBottom: '40px', fontSize: '1.2rem' }}>
-                Оберіть свою процедуру, щоб стати ще чарівнішою.
-            </p>
+    return (
+        <div style={{ 
+            width: '100%', 
+            minHeight: '100vh',
+            backgroundImage: `url('https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=2000&auto=format&fit=crop')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundAttachment: 'fixed',
+            backgroundRepeat: 'no-repeat',
+        }}>
+            <div className="container animate" style={pageStyle}>
+            <h1 style={{ color: '#d81b60', textAlign: 'center', marginBottom: '10px' }}>Наші Послуги</h1>
+            <p style={{ textAlign: 'center', color: '#666', marginBottom: '40px', fontSize: '1.2rem' }}>
+                Оберіть свою процедуру, щоб стати ще чарівнішою.
+            </p>
 
             {/* БЛОК ЕЛЕГАНТНИХ ФІЛЬТРІВ */}
             <div style={filterPanelStyle}>
@@ -271,16 +287,16 @@ const Services = ({ onCartUpdate, openInfoModal }) => {
             </div>
 
 
-            {/* 4. Сітка Послуг */}
-            <div style={gridStyle}>
-                {filteredServices.map(service => (
-                    <Link 
-                        to={`/service/${service.slug}`} 
-                        key={service.id} 
-                        style={serviceCardStyle}
-                        onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
-                        onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-                    >
+            {/* 4. Сітка Послуг */}
+            <div style={gridStyle}>
+                {filteredServices.map(service => (
+                    <Link 
+                        to={`/service/${service.slug}`} 
+                        key={service.id} 
+                        style={serviceCardStyle}
+                        onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+                        onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                    >
                         <img src={service.image} alt={service.name} style={imageStyle} />
                         <div style={cardContentStyle}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
@@ -311,9 +327,10 @@ const Services = ({ onCartUpdate, openInfoModal }) => {
                 <p style={{ textAlign: 'center', color: '#d81b60', fontSize: '1.2rem', marginTop: '40px' }}>
                     На жаль, не знайдено послуг за вказаними критеріями фільтрації.
                 </p>
-            )}
-        </div>
-    );
+            )}
+            </div>
+        </div>
+    );
 };
 
 export default Services;

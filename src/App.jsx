@@ -24,6 +24,10 @@ import Auth, {
     servicesData, 
     mastersData, 
     clearCart,
+    getStoredToken,
+    validateJWT,
+    getUserFromToken,
+    removeToken,
 } from './pages/Auth.jsx'; 
 import Profile from './pages/Profile.jsx';
 import ServiceDetail from './pages/ServiceDetail.jsx';
@@ -118,12 +122,40 @@ const InfoModal = ({ data, onClose }) => {
 
 function App() {
     const navigate = useNavigate();
-    const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
+    
+    // Перевіряємо JWT токен при завантаженні
+    const initializeUser = () => {
+        const token = getStoredToken();
+        if (token && validateJWT(token)) {
+            // Токен валідний, отримуємо користувача
+            const userFromToken = getUserFromToken();
+            if (userFromToken) {
+                return userFromToken;
+            }
+        }
+        // Якщо токен не валідний або відсутній, перевіряємо localStorage
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            try {
+                return JSON.parse(storedUser);
+            } catch (e) {
+                return null;
+            }
+        }
+        return null;
+    };
+    
+    const [user, setUser] = useState(initializeUser());
     const [cart, setCart] = useState(getCartDB()); 
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [appointments, setAppointments] = useState(getAppointmentsDB()); 
     const [successModalData, setSuccessModalData] = useState(null); 
-    const [infoModalData, setInfoModalData] = useState(null); 
+    const [infoModalData, setInfoModalData] = useState(null);
+
+    // Функція для відкриття InfoModal
+    const openInfoModal = (data) => {
+        setInfoModalData(data);
+    }; 
 
     const updateCart = useCallback(() => {
         const newCart = getCartDB();
@@ -149,7 +181,9 @@ function App() {
         updateAppointments();
         updateCart();
         
-        if (loggedInUser.role === 'master' && masterProfile) {
+        if (loggedInUser.role === 'admin') {
+            navigate('/profile'); // Адміністратор переходить в профіль (можна створити окремий дашборд)
+        } else if (loggedInUser.role === 'master' && masterProfile) {
             navigate('/master-dashboard');
         } else {
             navigate('/profile');
@@ -158,10 +192,16 @@ function App() {
 
     const handleLogout = () => {
         setUser(null);
-        localStorage.removeItem('user'); 
+        localStorage.removeItem('user');
+        removeToken(); // Видаляємо JWT токен
         clearCart(); 
         setCart([]);
         navigate('/');
+    };
+
+    const handleUpdateUser = (updatedUser) => {
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
     };
     
     const handleBookingSuccess = (newAppointment) => {
@@ -186,15 +226,48 @@ function App() {
     // -----------------------------------------------------------------
 
     // Імітація alert через InfoModal
+        useEffect(() => {
+            window.alert = (message, title = "Увага") => {
+                setInfoModalData({ title, message });
+            };
+            
+            // Додаємо функцію очищення бази даних в глобальний об'єкт для використання в консолі
+            window.clearAllDB = () => {
+                if (confirm('Ви впевнені, що хочете очистити всю базу даних? Це видалить всіх користувачів, записи та токени.')) {
+                    localStorage.clear();
+                    window.location.reload();
+                }
+            };
+
+            return () => {
+                delete window.alert;
+                delete window.clearAllDB;
+            }
+        }, []);
+
+    // Перевірка валідності токена при завантаженні та періодично
     useEffect(() => {
-        window.alert = (message, title = "Увага") => {
-            setInfoModalData({ title, message });
+        const checkToken = () => {
+            const token = getStoredToken();
+            if (token) {
+                if (!validateJWT(token)) {
+                    // Токен прострочений або невалідний - виходимо
+                    setUser(null);
+                    localStorage.removeItem('user');
+                    removeToken();
+                    clearCart();
+                    setCart([]);
+                    navigate('/');
+                }
+            }
         };
         
-        return () => {
-            delete window.alert; 
-        }
-    }, []);
+        checkToken();
+        // Перевіряємо токен кожні 5 хвилин
+        const interval = setInterval(checkToken, 5 * 60 * 1000);
+        
+        return () => clearInterval(interval);
+    }, [navigate]);
 
     // Підготовка записів для Profile та Dashboard
     const upcomingAppointments = appointments
@@ -233,14 +306,14 @@ function App() {
                     <Route path="/" element={<Home />} />
                     <Route 
                         path="/services" 
-                        element={<Services onCartUpdate={updateCart} />} 
+                        element={<Services onCartUpdate={updateCart} openInfoModal={openInfoModal} />} 
                     />
                     <Route path="/masters" element={<Masters />} /> 
                     <Route path="/gallery" element={<Gallery />} />
-                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/contact" element={<Contact openInfoModal={openInfoModal} />} />
 
                     {/* АВТОРИЗАЦІЯ ТА ПРОФІЛЬ */}
-                    <Route path="/auth" element={<Auth onLogin={handleLogin} />} />
+                    <Route path="/auth" element={<Auth onLogin={handleLogin} openInfoModal={openInfoModal} />} />
                     <Route 
                         path="/profile" 
                         element={
@@ -248,7 +321,10 @@ function App() {
                                 user={user} 
                                 onLogout={handleLogout} 
                                 appointments={upcomingAppointments.filter(app => String(app.userId) === String(user?.id))}
-                                onUpdateAppointments={updateAppointments} 
+                                onUpdateAppointments={updateAppointments}
+                                onUpdateUser={handleUpdateUser}
+                                setSuccessModalData={setSuccessModalData}
+                                openInfoModal={openInfoModal}
                             />
                         } 
                     />
@@ -261,6 +337,7 @@ function App() {
                                 user={user} 
                                 onBookingSuccess={handleBookingSuccess}
                                 onCartUpdate={updateCart}
+                                openInfoModal={openInfoModal}
                             />
                         } 
                     />
@@ -268,7 +345,7 @@ function App() {
                     {/* ДЕТАЛІ МАЙСТРА */}
                     <Route 
                         path="/master/:masterId" 
-                        element={<MasterDetail onCartUpdate={updateCart} />} 
+                        element={<MasterDetail onCartUpdate={updateCart} openInfoModal={openInfoModal} />} 
                     />
                     
                     {/* СТОРІНКА ЗАПИСУ (Checkout) */}
@@ -291,7 +368,9 @@ function App() {
                             element={
                                 <MasterDashboard 
                                     user={user} 
-                                    appointments={upcomingAppointments.filter(app => String(app.masterId) === String(user.masterId))} 
+                                    appointments={upcomingAppointments.filter(app => String(app.masterId) === String(user.masterId))}
+                                    onUpdateAppointments={updateAppointments}
+                                    openInfoModal={openInfoModal}
                                 />
                             } 
                         />

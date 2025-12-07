@@ -1,7 +1,8 @@
 // src/pages/MasterDashboard.jsx (ПОВНИЙ ВИПРАВЛЕНИЙ КОД З InfoModal)
 
-import React, { useState } from 'react';
-import { mastersData } from '../pages/Auth'; // 🔥 ІМПОРТ ДАНИХ МАЙСТРІВ
+import React, { useState, useEffect } from 'react';
+import { mastersData, getAppointmentsDB, updateAppointmentStatus, getUsersDB } from '../pages/Auth'; // 🔥 ІМПОРТ ДАНИХ МАЙСТРІВ
+import ConfirmationModal from '../components/ConfirmationModal';
 
 // Допоміжна функція для пошуку даних Майстра
 const findMasterData = (userId) => mastersData.find(m => String(m.userId) === String(userId));
@@ -16,6 +17,7 @@ const PALETTE = {
     background: '#f8f8f8',
     cardBackground: '#ffffff',
     textLight: '#f0f0f0',
+    error: '#C62828',
 };
 
 const pageStyle = {
@@ -26,8 +28,12 @@ const pageStyle = {
     gap: '30px',
     gridTemplateAreas: `'profile appointments' 'schedule appointments'`,
     gridTemplateColumns: '1fr 2fr',
-    backgroundColor: PALETTE.background,
-    minHeight: '80vh',
+    backgroundImage: `radial-gradient(ellipse at center, rgba(255, 255, 255, 0.7) 0%, rgba(248, 248, 255, 0.85) 50%, rgba(240, 245, 255, 0.9) 100%), url('https://images.unsplash.com/photo-1560472354-b33ff0c44a43?q=80&w=2000&auto=format&fit=crop')`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundAttachment: 'fixed',
+    backgroundRepeat: 'no-repeat',
+    minHeight: '100vh',
     fontFamily: 'Arial, sans-serif',
 };
 
@@ -79,7 +85,7 @@ const dayHeaderStyle = {
 // =================================================================
 
 // 🚨 КРИТИЧНЕ ВИПРАВЛЕННЯ: Додаємо openInfoModal у пропси
-const MasterDashboard = ({ user, appointments, openInfoModal }) => { 
+const MasterDashboard = ({ user, appointments: initialAppointments, openInfoModal, onUpdateAppointments }) => { 
     // Перевіряємо, чи має користувач права майстра та дані
     if (user.role !== 'master') return <h2>Доступ заборонено.</h2>;
 
@@ -88,8 +94,27 @@ const MasterDashboard = ({ user, appointments, openInfoModal }) => {
     // Якщо дані майстра не знайдені, виводимо заглушку або помилку
     if (!masterProfile) return <h2 style={{ padding: '50px', textAlign: 'center' }}>Помилка: Профіль майстра не знайдено.</h2>;
 
-    // 1. Імітація графіка роботи (поки немає бекенду)
-    const [schedule, setSchedule] = useState({
+    // Стан для записів
+    const [appointments, setAppointments] = useState(initialAppointments || []);
+    
+    // Оновлюємо записи при зміні
+    useEffect(() => {
+        const allAppointments = getAppointmentsDB();
+        const masterAppointments = allAppointments
+            .filter(app => String(app.masterId) === String(user.masterId))
+            .map(app => {
+                const users = getUsersDB();
+                const client = users.find(u => String(u.id) === String(app.userId));
+                return {
+                    ...app,
+                    clientName: client?.firstName || 'Невідомий клієнт',
+                };
+            });
+        setAppointments(masterAppointments);
+    }, [user.masterId]);
+
+    // 1. Графік роботи (завантажуємо з localStorage або використовуємо графік з профілю майстра)
+    const defaultSchedule = masterProfile.schedule || {
         Monday: { start: '10:00', end: '19:00', isWorking: true },
         Tuesday: { start: '10:00', end: '19:00', isWorking: true },
         Wednesday: { start: '10:00', end: '19:00', isWorking: false }, // Вихідний
@@ -97,7 +122,13 @@ const MasterDashboard = ({ user, appointments, openInfoModal }) => {
         Friday: { start: '10:00', end: '19:00', isWorking: true },
         Saturday: { start: '11:00', end: '16:00', isWorking: true },
         Sunday: { start: '11:00', end: '16:00', isWorking: false },
-    });
+    };
+    
+    // Завантажуємо збережений графік з localStorage
+    const savedSchedule = localStorage.getItem(`master_schedule_${user.masterId}`);
+    const initialSchedule = savedSchedule ? JSON.parse(savedSchedule) : defaultSchedule;
+    
+    const [schedule, setSchedule] = useState(initialSchedule);
 
     const handleScheduleChange = (day, field, value) => {
         setSchedule(prev => ({
@@ -115,7 +146,9 @@ const MasterDashboard = ({ user, appointments, openInfoModal }) => {
     
     // 🔥 ФУНКЦІЯ ЗБЕРЕЖЕННЯ ГРАФІКА
     const handleSaveSchedule = () => {
-        // Тут буде логіка збереження на бекенд...
+        // Зберігаємо графік в localStorage (імітація бекенду)
+        const masterData = { ...masterProfile, schedule };
+        localStorage.setItem(`master_schedule_${user.masterId}`, JSON.stringify(schedule));
         
         // 🔥 ВИКОРИСТОВУЄМО InfoModal ЗАМІСТЬ alert()
         if (openInfoModal) {
@@ -127,10 +160,67 @@ const MasterDashboard = ({ user, appointments, openInfoModal }) => {
         }
     };
 
+    // Функції для управління записами
+    const handleConfirmAppointment = (appointmentId) => {
+        updateAppointmentStatus(appointmentId, 'confirmed', 'Підтверджено');
+        if (onUpdateAppointments) onUpdateAppointments();
+        // Оновлюємо локальний стан
+        setAppointments(prev => prev.map(app => 
+            app.id === appointmentId 
+                ? { ...app, status: 'confirmed', statusText: 'Підтверджено' }
+                : app
+        ));
+        if (openInfoModal) {
+            openInfoModal({
+                title: "Запис підтверджено! ✅",
+                message: "Клієнт буде повідомлений про підтвердження запису.",
+            });
+        }
+    };
+
+    const [cancelModalData, setCancelModalData] = useState(null);
+
+    const handleCancelAppointment = (appointmentId) => {
+        setCancelModalData({
+            appointmentId,
+            title: "Скасувати запис?",
+            message: "Ви впевнені, що хочете скасувати цей запис?",
+        });
+    };
+
+    const handleConfirmCancel = () => {
+        if (cancelModalData?.appointmentId) {
+            updateAppointmentStatus(cancelModalData.appointmentId, 'cancelled', 'Скасовано майстром');
+            if (onUpdateAppointments) onUpdateAppointments();
+            // Оновлюємо локальний стан
+            setAppointments(prev => prev.map(app => 
+                app.id === cancelModalData.appointmentId 
+                    ? { ...app, status: 'cancelled', statusText: 'Скасовано майстром' }
+                    : app
+            ));
+            if (openInfoModal) {
+                openInfoModal({
+                    title: "Запис скасовано",
+                    message: "Клієнт буде повідомлений про скасування запису.",
+                });
+            }
+            setCancelModalData(null);
+        }
+    };
+
     const daysOfWeek = Object.keys(schedule);
 
     return (
-        <div className="container animate" style={pageStyle}>
+        <div style={{ 
+            width: '100%', 
+            minHeight: '100vh',
+            backgroundImage: `url('https://images.unsplash.com/photo-1560472354-b33ff0c44a43?q=80&w=2000&auto=format&fit=crop')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundAttachment: 'fixed',
+            backgroundRepeat: 'no-repeat',
+        }}>
+            <div className="container animate" style={pageStyle}>
             
             {/* 1. Картка Профілю */}
             <div style={{ ...cardStyle, gridArea: 'profile', textAlign: 'center' }}>
@@ -147,21 +237,62 @@ const MasterDashboard = ({ user, appointments, openInfoModal }) => {
 
             {/* 2. Картка Майбутніх Записів */}
             <div style={{ ...cardStyle, gridArea: 'appointments' }}>
-                <h3 style={sectionTitleStyle}>Майбутні Записи ({appointments.length})</h3>
-                {appointments.length > 0 ? (
-                    appointments.map(app => (
-                        <div key={app.id} style={appointmentCardStyle}>
-                            <div>
+                <h3 style={sectionTitleStyle}>Майбутні Записи ({appointments.filter(a => a.status !== 'cancelled' && a.status !== 'completed').length})</h3>
+                {appointments.filter(a => a.status !== 'cancelled' && a.status !== 'completed').length > 0 ? (
+                    appointments
+                        .filter(a => a.status !== 'cancelled' && a.status !== 'completed')
+                        .map(app => (
+                        <div key={app.id} style={{ ...appointmentCardStyle, flexDirection: 'column', alignItems: 'flex-start', gap: '10px' }}>
+                            <div style={{ width: '100%' }}>
                                 <p style={{ margin: '0 0 5px 0', fontWeight: 'bold', color: PALETTE.secondary }}>
-                                    {app.serviceName}
+                                    {app.serviceName || 'Послуга'}
                                 </p>
-                                <p style={{ margin: 0, fontSize: '0.9rem', color: '#666' }}>
+                                <p style={{ margin: '0 0 5px 0', fontSize: '0.9rem', color: '#666' }}>
                                     🗓️ {app.date} о ⏰ {app.time}
                                 </p>
+                                <p style={{ margin: 0, fontSize: '0.9rem', color: PALETTE.primary, fontWeight: 'bold' }}>
+                                    👤 {app.clientName || 'Клієнт'}
+                                </p>
+                                <p style={{ margin: '5px 0 0 0', fontSize: '0.85rem', color: app.status === 'confirmed' ? '#4CAF50' : '#FF9800' }}>
+                                    Статус: {app.statusText || app.status || 'Очікує підтвердження'}
+                                </p>
                             </div>
-                            <span style={{ fontWeight: 'bold', color: PALETTE.primary }}>
-                                {app.clientName || 'Клієнт'}
-                            </span>
+                            <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
+                                {app.status !== 'confirmed' && (
+                                    <button
+                                        onClick={() => handleConfirmAppointment(app.id)}
+                                        style={{
+                                            flex: 1,
+                                            padding: '8px 15px',
+                                            background: '#4CAF50',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '6px',
+                                            cursor: 'pointer',
+                                            fontWeight: 'bold',
+                                            fontSize: '0.9rem'
+                                        }}
+                                    >
+                                        Підтвердити
+                                    </button>
+                                )}
+                                <button
+                                    onClick={() => handleCancelAppointment(app.id)}
+                                    style={{
+                                        flex: 1,
+                                        padding: '8px 15px',
+                                        background: PALETTE.error || '#C62828',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        cursor: 'pointer',
+                                        fontWeight: 'bold',
+                                        fontSize: '0.9rem'
+                                    }}
+                                >
+                                    Скасувати
+                                </button>
+                            </div>
                         </div>
                     ))
                 ) : (
@@ -225,6 +356,16 @@ const MasterDashboard = ({ user, appointments, openInfoModal }) => {
                         Зберегти Графік
                     </button>
                 </div>
+            </div>
+            
+            {/* Модальне вікно підтвердження скасування */}
+            <ConfirmationModal
+                isOpen={!!cancelModalData}
+                title={cancelModalData?.title || ''}
+                message={cancelModalData?.message || ''}
+                onConfirm={handleConfirmCancel}
+                onCancel={() => setCancelModalData(null)}
+            />
             </div>
         </div>
     );

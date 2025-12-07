@@ -3,22 +3,52 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 // 🔥 КРИТИЧНЕ ВИПРАВЛЕННЯ: ІМПОРТУЄМО ДАНІ ТА ФУНКЦІЇ З Auth
-import { servicesData, mastersData, saveAppointment, getCartDB, clearCart } from './Auth'; 
+import { servicesData, mastersData, saveAppointment, getCartDB, clearCart, getAppointmentsDB } from './Auth'; 
 
 
-// Допоміжна функція для імітації доступних слотів
-const generateTimeSlots = (start = 10, end = 19, duration = 60) => {
+// Допоміжна функція для генерації доступних слотів на основі графіка майстра
+const generateTimeSlots = (master, selectedDate, existingAppointments = []) => {
+    if (!master || !selectedDate) return [];
+    
+    // Отримуємо день тижня
+    const date = new Date(selectedDate);
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const dayName = dayNames[date.getDay()];
+    
+    // Завантажуємо графік з localStorage або використовуємо графік з профілю майстра
+    const savedSchedule = localStorage.getItem(`master_schedule_${master.id}`);
+    const masterSchedule = savedSchedule ? JSON.parse(savedSchedule) : (master.schedule || {});
+    
+    // Перевіряємо, чи майстер працює в цей день
+    const daySchedule = masterSchedule[dayName];
+    if (!daySchedule || !daySchedule.isWorking) return [];
+    
+    // Парсимо час початку та кінця
+    const [startHour, startMin] = daySchedule.start.split(':').map(Number);
+    const [endHour, endMin] = daySchedule.end.split(':').map(Number);
+    const startMinutes = startHour * 60 + startMin;
+    const endMinutes = endHour * 60 + endMin;
+    
+    // Генеруємо всі можливі слоти (кожні 60 хвилин)
     const slots = [];
-    for (let h = start; h < end; h++) {
-        for (let m = 0; m < 60; m += duration) {
-            if (h * 60 + m < end * 60) {
-                const hour = String(h).padStart(2, '0');
-                const minute = String(m).padStart(2, '0');
-                slots.push(`${hour}:${minute}`);
-            }
-        }
+    for (let minutes = startMinutes; minutes < endMinutes; minutes += 60) {
+        const hour = Math.floor(minutes / 60);
+        const min = minutes % 60;
+        const timeSlot = `${String(hour).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
+        slots.push(timeSlot);
     }
-    return slots;
+    
+    // Фільтруємо зайняті слоти
+    const bookedSlots = existingAppointments
+        .filter(app => 
+            String(app.masterId) === String(master.id) && 
+            app.date === selectedDate &&
+            app.status !== 'Скасовано' &&
+            app.status !== 'cancelled'
+        )
+        .map(app => app.time);
+    
+    return slots.filter(slot => !bookedSlots.includes(slot));
 };
 
 const Appointment = ({ user, onBookingSuccess }) => {
@@ -33,11 +63,16 @@ const Appointment = ({ user, onBookingSuccess }) => {
   const [selectedMasterId, setSelectedMasterId] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
+  const [existingAppointments, setExistingAppointments] = useState([]);
 
-  // 2. useEffect для ініціалізації кошика
+  // 2. useEffect для ініціалізації кошика та записів
   useEffect(() => {
     const items = getCartDB();
     setCartItems(items);
+    
+    // Завантажуємо існуючі записи для перевірки доступності слотів
+    const appointments = getAppointmentsDB();
+    setExistingAppointments(appointments);
     
     // Якщо в кошику є послуги, встановлюємо першу як обрану
     if (items.length > 0) {
@@ -67,7 +102,8 @@ const Appointment = ({ user, onBookingSuccess }) => {
   // 4. Обробник Бронювання (КЛЮЧОВИЙ ФІКС)
   const handleBooking = () => {
     if (!currentService || !selectedMasterId || !selectedDate || !selectedTime) {
-        alert("Будь ласка, оберіть послугу, майстра, дату та час.");
+        // Використовуємо window.alert, який перехоплюється в App.jsx
+        window.alert("Будь ласка, оберіть послугу, майстра, дату та час.");
         return;
     }
 
@@ -93,7 +129,18 @@ const Appointment = ({ user, onBookingSuccess }) => {
   // ... (решта коду компонента Appointment: стилі, рендеринг)
   
     // 5. Стилі
-    const pageContainerStyle = { padding: '40px 20px', maxWidth: '800px', margin: '0 auto' };
+    const pageContainerStyle = { 
+        padding: '40px 20px', 
+        maxWidth: '800px', 
+        margin: '0 auto',
+        backgroundImage: `radial-gradient(ellipse at center, rgba(255, 255, 255, 0.7) 0%, rgba(240, 245, 255, 0.85) 50%, rgba(230, 240, 255, 0.9) 100%), url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2000&auto=format&fit=crop')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+        backgroundRepeat: 'no-repeat',
+        minHeight: '100vh',
+        width: '100%',
+    };
     const stepContainerStyle = { 
         padding: '30px', 
         border: '1px solid #eee', 
@@ -149,15 +196,27 @@ const Appointment = ({ user, onBookingSuccess }) => {
     };
     const sectionTitleStyle = { color: '#d81b60', borderBottom: '2px solid #f0f0f0', paddingBottom: '10px', marginBottom: '20px' };
 
-    // Імітація доступних слотів (завжди всі)
-    const availableTimes = generateTimeSlots(); 
+    // Отримуємо обраного майстра та генеруємо доступні слоти
+    const selectedMaster = mastersData.find(m => m.id === selectedMasterId);
+    const availableTimes = selectedMaster && selectedDate 
+        ? generateTimeSlots(selectedMaster, selectedDate, existingAppointments)
+        : []; 
     const availableSlotStyle = { padding: '8px 15px', border: '1px solid #ddd', borderRadius: '5px', cursor: 'pointer', background: '#f8f8f8' };
     const selectedSlotStyle = { ...availableSlotStyle, background: '#d81b60', color: 'white', fontWeight: 'bold' };
 
     // 6. Умовний рендеринг: Якщо кошик порожній
     if (cartItems.length === 0) {
         return (
-            <div className="container" style={{ padding: '60px 20px', textAlign: 'center' }}>
+            <div className="container" style={{ 
+                padding: '60px 20px', 
+                textAlign: 'center',
+                backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.85), rgba(240, 245, 255, 0.9)), url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2000&auto=format&fit=crop')`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundAttachment: 'fixed',
+                backgroundRepeat: 'no-repeat',
+                minHeight: '100vh',
+            }}>
                 <h2 style={{ color: '#d81b60' }}>Кошик Порожній</h2>
                 <p style={{ color: '#666', fontSize: '1.1rem' }}>
                     Додайте послуги, щоб продовжити запис.
@@ -174,7 +233,16 @@ const Appointment = ({ user, onBookingSuccess }) => {
 
     // 7. Основний рендеринг
     return (
-        <div className="container" style={pageContainerStyle}>
+        <div style={{ 
+            width: '100%', 
+            minHeight: '100vh',
+            backgroundImage: `url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2000&auto=format&fit=crop')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundAttachment: 'fixed',
+            backgroundRepeat: 'no-repeat',
+        }}>
+            <div className="container" style={pageContainerStyle}>
             <h1 style={{ color: '#d81b60', marginBottom: '40px', textAlign: 'center' }}>
                 Оформлення Запису ({cartItems.length} {cartItems.length === 1 ? 'Послуга' : 'Послуги'})
             </h1>
@@ -254,17 +322,23 @@ const Appointment = ({ user, onBookingSuccess }) => {
                                 <>
                                     {/* Вибір Часу */}
                                     <h3 style={{ color: '#333', marginBottom: '15px' }}>Оберіть Час</h3>
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                                        {availableTimes.map(time => (
-                                            <button
-                                                key={time}
-                                                style={selectedTime === time ? selectedSlotStyle : availableSlotStyle}
-                                                onClick={() => setSelectedTime(time)}
-                                            >
-                                                {time}
-                                            </button>
-                                        ))}
-                                    </div>
+                                    {availableTimes.length > 0 ? (
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                                            {availableTimes.map(time => (
+                                                <button
+                                                    key={time}
+                                                    style={selectedTime === time ? selectedSlotStyle : availableSlotStyle}
+                                                    onClick={() => setSelectedTime(time)}
+                                                >
+                                                    {time}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p style={{ color: '#d81b60', padding: '15px', background: '#fff3f7', borderRadius: '8px' }}>
+                                            На жаль, вільних слотів на цю дату немає. Оберіть іншу дату.
+                                        </p>
+                                    )}
                                 </>
                             )}
                         </>
@@ -312,6 +386,7 @@ const Appointment = ({ user, onBookingSuccess }) => {
                     </button>
                 </div>
             )}
+            </div>
         </div>
     );
 };

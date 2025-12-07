@@ -25,7 +25,18 @@ const masters = authMastersData.map(master => {
 
 const Masters = () => {
     // --- Стилі тут не змінені ---
-    const pageContainerStyle = { padding: '40px 20px', maxWidth: '1200px', margin: '0 auto' };
+    const pageContainerStyle = { 
+        padding: '40px 20px', 
+        maxWidth: '1200px', 
+        margin: '0 auto',
+        backgroundImage: `radial-gradient(ellipse at center, rgba(255, 255, 255, 0.7) 0%, rgba(240, 250, 255, 0.85) 50%, rgba(230, 245, 255, 0.9) 100%), url('https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=2000&auto=format&fit=crop')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+        backgroundRepeat: 'no-repeat',
+        minHeight: '100vh',
+        width: '100%',
+    };
     const gridStyle = { 
         display: 'grid', 
         gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', 
@@ -54,16 +65,25 @@ const Masters = () => {
 
 
     return (
-	    <div className="container animate" style={pageContainerStyle}>
-            <h1 style={{ textAlign: 'center', color: '#333', marginBottom: '10px' }}>Наша Команда</h1>
+        <div style={{ 
+            width: '100%', 
+            minHeight: '100vh',
+            backgroundImage: `url('https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=2000&auto=format&fit=crop')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundAttachment: 'fixed',
+            backgroundRepeat: 'no-repeat',
+        }}>
+            <div className="container animate" style={pageContainerStyle}>
+	      <h1 style={{ textAlign: 'center', color: '#333', marginBottom: '10px' }}>Наша Команда</h1>
             <p style={{ textAlign: 'center', color: '#666', marginBottom: '30px', fontSize: '1.1rem' }}>
                 Познайомтеся з нашими найкращими фахівцями.
             </p>
 
-            <div style={gridStyle}>
-              {masters.map(master => (
+      <div style={gridStyle}>
+	       {masters.map(master => (
                 // 🔥 ОБГОРТАЄМО КАРТКУ В <Link> для переходу на сторінку деталей
-                    <Link to={`/master/${master.id}`} key={master.id} style={masterCardStyle}>
+	          <Link to={`/master/${master.id}`} key={master.id} style={masterCardStyle}>
                         <img 
                             src={master.image} 
                             alt={master.name} 
@@ -80,10 +100,11 @@ const Masters = () => {
                             </div>
                         </div>
                     </Link>
-                ))}
-            </div>
-        </div>
-    );
+	       ))}
+            </div>
+        </div>
+        </div>
+    );
 };
 
 export default Masters;

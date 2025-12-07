@@ -5,7 +5,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 // 🔥 ІМПОРТУЄМО ДАНІ З AUTH.JSX
 import { mastersData, servicesData, addToCart } from './Auth'; 
 
-const MasterDetail = ({ onCartUpdate }) => {
+const MasterDetail = ({ onCartUpdate, openInfoModal }) => {
     const { masterId } = useParams();
     const navigate = useNavigate();
     
@@ -43,15 +43,36 @@ const MasterDetail = ({ onCartUpdate }) => {
     const handleAddToCart = (service) => {
         const added = addToCart(service);
         if (added) {
-            alert(`Послугу "${service.name}" додано до кошика!`);
+            if (openInfoModal) {
+                openInfoModal({
+                    title: "Додано до кошика! 🛍️",
+                    message: `Послугу "${service.name}" додано до кошика!`,
+                });
+            }
             if (onCartUpdate) onCartUpdate();
         } else {
-            alert(`Послуга "${service.name}" вже є в кошику.`);
+            if (openInfoModal) {
+                openInfoModal({
+                    title: "Послуга вже в кошику",
+                    message: `Послуга "${service.name}" вже є в кошику.`,
+                });
+            }
         }
     };
     
     // --- Стилі ---
-    const pageContainerStyle = { padding: '40px 20px', maxWidth: '1000px', margin: '0 auto' };
+    const pageContainerStyle = { 
+        padding: '40px 20px', 
+        maxWidth: '1000px', 
+        margin: '0 auto',
+        backgroundImage: `radial-gradient(ellipse at center, rgba(255, 255, 255, 0.7) 0%, rgba(250, 240, 250, 0.85) 50%, rgba(245, 230, 245, 0.9) 100%), url('https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=2000&auto=format&fit=crop')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+        backgroundRepeat: 'no-repeat',
+        minHeight: '100vh',
+        width: '100%',
+    };
     const headerStyle = { display: 'flex', gap: '40px', alignItems: 'flex-start', marginBottom: '40px', flexWrap: 'wrap' };
     const imageStyle = { width: '250px', height: '250px', borderRadius: '50%', objectFit: 'cover', boxShadow: '0 8px 25px rgba(0,0,0,0.15)' };
     const infoStyle = { flexGrow: 1, minWidth: '300px' };
@@ -82,14 +103,23 @@ const MasterDetail = ({ onCartUpdate }) => {
     const masterDetails = {
         1: { about: "Спеціалізується на складних фарбуваннях (AirTouch, Balayage) та стрижках. Досвід 10 років. Завжди актуальна.", rating: 4.9, experience: '10 років' },
         2: { about: "Творчий підхід до дизайну нігтів, працює лише з преміум-матеріалами. Швидкість та якість.", rating: 4.8, experience: '7 років' },
-        3: { about: "Класичні та сучасні чоловічі стрижки, корекція бороди. Завжди ідеальний фейд. Справжній барбер.", rating: 4.7, experience: '5 років' },
+        3: { about: "Створюю образи для червоних доріжок. Професійний макіяж для будь-яких подій.", rating: 4.7, experience: '5 років' },
         4: { about: "Універсальний майстер, який володіє всіма техніками. Швидкий запис, висока якість.", rating: 5.0, experience: '8 років' },
     };
     const details = masterDetails[master.id] || {};
 
 
     return (
-        <div className="container animate" style={pageContainerStyle}>
+        <div style={{ 
+            width: '100%', 
+            minHeight: '100vh',
+            backgroundImage: `url('https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=2000&auto=format&fit=crop')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundAttachment: 'fixed',
+            backgroundRepeat: 'no-repeat',
+        }}>
+            <div className="container animate" style={pageContainerStyle}>
             <div style={headerStyle}>
                 {/* 1. Фото Майстра */}
                 <img src={master.image} alt={master.name} style={imageStyle} />
@@ -104,8 +134,10 @@ const MasterDetail = ({ onCartUpdate }) => {
                     </p>
                     
                     <div style={{ marginTop: '20px', fontSize: '1rem' }}>
-                        <p>⭐️ **Рейтинг:** {details.rating || '5.0'} / 5.0</p>
-                        <p>📅 **Досвід:** {details.experience || 'від 5 років'}</p>
+                        <p>⭐️ <strong>Рейтинг:</strong> {master.rating || details.rating || '5.0'} / 5.0</p>
+                        <p>📅 <strong>Досвід:</strong> {master.experience || details.experience || 'від 5 років'}</p>
+                        {master.phone && <p>📞 <strong>Телефон:</strong> {master.phone}</p>}
+                        {master.email && <p>✉️ <strong>Email:</strong> {master.email}</p>}
                     </div>
                 </div>
             </div>
@@ -152,7 +184,7 @@ const MasterDetail = ({ onCartUpdate }) => {
                     </div>
                 ))}
             </div>
-            
+            </div>
         </div>
     );
 };

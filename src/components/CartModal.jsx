@@ -1,6 +1,6 @@
-// src/components/CartModal.jsx (ПОВНИЙ ВИПРАВЛЕНИЙ КОД)
+// src/components/CartModal.jsx (ПОВНИЙ ВИПРАВЛЕНИЙ КОД З ПЛАВНИМИ АНІМАЦІЯМИ)
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 // 🔥 ІМПОРТ ФУНКЦІЙ: Потрібні для видалення та очищення кошика послуг (припускаємо, що вони в Auth)
 import { removeFromCart, clearCart } from '../pages/Auth'; 
@@ -9,9 +9,24 @@ import { removeFromCart, clearCart } from '../pages/Auth';
 // 🚨 onCartUpdate - це функція, яка оновлює лічильник у Header
 const CartModal = ({ isOpen, onClose, cartItems, onCartUpdate }) => { 
     const navigate = useNavigate();
-    // onRemoveItem та onCheckout замінено на внутрішню логіку, 
-    // щоб CartModal міг сам викликати оновлення лічильника через onCartUpdate
-    if (!isOpen) return null;
+    const [isAnimating, setIsAnimating] = useState(false);
+    const [shouldRender, setShouldRender] = useState(false);
+    
+    // Плавна анімація відкриття/закриття
+    useEffect(() => {
+        if (isOpen) {
+            setShouldRender(true);
+            // Невелика затримка для запуску анімації
+            setTimeout(() => setIsAnimating(true), 10);
+        } else {
+            setIsAnimating(false);
+            // Чекаємо завершення анімації перед видаленням з DOM
+            const timer = setTimeout(() => setShouldRender(false), 300);
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen]);
+    
+    if (!shouldRender) return null;
 
     const handleRemove = (itemId) => {
         removeFromCart(itemId);
@@ -43,8 +58,22 @@ const CartModal = ({ isOpen, onClose, cartItems, onCartUpdate }) => {
     const totalPrice = cartItems.reduce((sum, item) => sum + (item.price || 0), 0);
 
     return (
-        <div style={modalOverlayStyle} onClick={onClose}>
-            <div style={modalContentStyle} onClick={(e) => e.stopPropagation()}>
+        <div 
+            style={{
+                ...modalOverlayStyle,
+                opacity: isAnimating ? 1 : 0,
+                transition: 'opacity 0.3s ease-out',
+            }} 
+            onClick={onClose}
+        >
+            <div 
+                style={{
+                    ...modalContentStyle,
+                    transform: isAnimating ? 'translateX(0)' : 'translateX(100%)',
+                    transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                }} 
+                onClick={(e) => e.stopPropagation()}
+            >
                 <div style={headerStyle}>
                     <h2 style={{ color: 'white', fontWeight: 600 }}>Кошик ({cartItems.length})</h2>
                     <button onClick={onClose} style={closeButtonStyle}>✕ Закрити</button>
@@ -77,8 +106,14 @@ const CartModal = ({ isOpen, onClose, cartItems, onCartUpdate }) => {
                         <h3 style={{color: 'white', marginBottom: '15px'}}>Обрані послуги:</h3>
                         
                         <div style={{ maxHeight: '300px', overflowY: 'auto', paddingRight: '10px', flexShrink: 0 }}>
-                            {cartItems.map(item => (
-                                <div key={item.id} style={cartItemStyle}>
+                            {cartItems.map((item, index) => (
+                                <div 
+                                    key={item.id} 
+                                    style={{
+                                        ...cartItemStyle,
+                                        animation: `slideInItem 0.3s ease-out ${index * 0.05}s both`,
+                                    }}
+                                >
                                     {/* Додано зображення, якщо воно є в даних послуги */}
                                     {item.image && <img src={item.image} alt={item.name} style={itemImageStyle} />} 
                                     
@@ -123,28 +158,30 @@ const CartModal = ({ isOpen, onClose, cartItems, onCartUpdate }) => {
     );
 };
 
-// --- Стилі для CartModal.jsx (ЗБЕРЕЖЕННЯ ВАШИХ СТИЛІВ + ДОДАВАННЯ НЕОБХІДНИХ) ---
+// --- Стилі для CartModal.jsx (З ПЛАВНИМИ АНІМАЦІЯМИ) ---
 const modalOverlayStyle = {
     position: 'fixed',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.9)', 
+    backgroundColor: 'rgba(0, 0, 0, 0.75)', 
     display: 'flex',
     justifyContent: 'flex-end',
-    zIndex: 3000, 
+    zIndex: 3000,
+    backdropFilter: 'blur(4px)',
 };
 
 const modalContentStyle = {
     backgroundColor: '#1a1a1a', 
     width: '400px', 
-    maxWidth: '100%',
+    maxWidth: '90%',
     height: '100%',
-    boxShadow: '-5px 0 20px rgba(0,0,0,0.5)',
+    boxShadow: '-5px 0 30px rgba(0,0,0,0.5)',
     position: 'relative',
     display: 'flex',
     flexDirection: 'column',
+    willChange: 'transform',
 };
 
 const headerStyle = {
@@ -280,6 +317,29 @@ const checkoutButtonStyle = {
     cursor: 'pointer',
     textAlign: 'center',
     width: '100%',
+    transition: 'background 0.2s ease, transform 0.2s ease',
 };
+
+// Додаємо CSS анімації через style tag (безпечно для React)
+if (typeof document !== 'undefined') {
+    const styleId = 'cart-modal-styles';
+    if (!document.getElementById(styleId)) {
+        const styleSheet = document.createElement('style');
+        styleSheet.id = styleId;
+        styleSheet.textContent = `
+            @keyframes slideInItem {
+                from {
+                    opacity: 0;
+                    transform: translateX(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+    }
+}
 
 export default CartModal;

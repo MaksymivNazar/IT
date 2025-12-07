@@ -49,8 +49,28 @@ const Contact = ({ openInfoModal }) => {
         e.target.reset(); 
     };
 
+    const pageContainerStyle = {
+        padding: '40px 20px',
+        backgroundImage: `radial-gradient(ellipse at center, rgba(255, 255, 255, 0.7) 0%, rgba(255, 240, 250, 0.85) 50%, rgba(255, 230, 245, 0.9) 100%), url('https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=2000&auto=format&fit=crop')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+        backgroundRepeat: 'no-repeat',
+        minHeight: '100vh',
+        width: '100%',
+    };
+
     return (
-        <div className="container animate" style={{ padding: '40px 20px' }}>
+        <div style={{ 
+            width: '100%', 
+            minHeight: '100vh',
+            backgroundImage: `url('https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=2000&auto=format&fit=crop')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundAttachment: 'fixed',
+            backgroundRepeat: 'no-repeat',
+        }}>
+            <div className="container animate" style={pageContainerStyle}>
             <h1 style={{ textAlign: 'center', color: '#d81b60', marginBottom: '10px' }}>Зв'яжіться з Нами</h1>
             <p style={{ textAlign: 'center', fontSize: '1.2rem', color: '#666', marginBottom: '50px' }}>Ми завжди раді вашому візиту!</p>
 
@@ -90,6 +110,7 @@ const Contact = ({ openInfoModal }) => {
                     <textarea placeholder="Ваше повідомлення" style={textareaStyle} required></textarea>
                     <button type="submit" style={submitButtonStyle}>ВІДПРАВИТИ ПОВІДОМЛЕННЯ</button>
                 </form>
+            </div>
             </div>
         </div>
     );
