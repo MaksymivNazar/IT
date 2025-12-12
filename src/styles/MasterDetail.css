@@ -1,0 +1,188 @@
+:root {
+    --master-detail-primary: #d81b60;
+    --master-detail-text-dark: #333333;
+    --master-detail-error: #c62828;
+}
+
+.master-detail-wrapper {
+    width: 100%;
+    min-height: 100vh;
+    background-image: url("https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=2000&auto=format&fit=crop");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+}
+
+.master-detail-page {
+    padding: 40px 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background-image: radial-gradient(
+            ellipse at center,
+            rgba(255, 255, 255, 0.7) 0%,
+            rgba(250, 240, 250, 0.85) 50%,
+            rgba(245, 230, 245, 0.9) 100%
+    );
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.master-detail-status {
+    text-align: center;
+    margin-top: 40px;
+    color: #555;
+}
+
+.master-detail-error {
+    text-align: center;
+    margin-top: 40px;
+    color: var(--master-detail-error);
+    background-color: #fee;
+    padding: 12px;
+    border-radius: 8px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.master-detail-back-btn {
+    display: inline-block;
+    margin: 20px auto 0;
+    padding: 10px 20px;
+    background: var(--master-detail-primary);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.95rem;
+}
+
+.master-detail-not-found-title {
+    text-align: center;
+    color: var(--master-detail-primary);
+    margin-bottom: 10px;
+}
+
+.master-detail-not-found-text {
+    text-align: center;
+    color: #555;
+}
+
+.master-detail-header {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+.master-detail-photo {
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.master-detail-info {
+    flex-grow: 1;
+    min-width: 300px;
+}
+
+.master-detail-name {
+    margin-bottom: 10px;
+    color: var(--master-detail-text-dark);
+}
+
+.master-detail-role {
+    color: var(--master-detail-primary);
+    margin: 0 0 20px 0;
+    font-weight: 400;
+}
+
+.master-detail-about {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: #555;
+}
+
+.master-detail-meta {
+    margin-top: 20px;
+    font-size: 0.95rem;
+}
+
+.master-detail-meta-label {
+    font-weight: bold;
+}
+
+.master-detail-section-title {
+    color: var(--master-detail-primary);
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    margin-top: 40px;
+}
+
+.master-detail-services {
+    margin-top: 20px;
+}
+
+.master-detail-service-card {
+    padding: 20px;
+    border: 1px solid #f0f0f0;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    gap: 20px;
+}
+
+.master-detail-service-main {
+    flex: 1;
+}
+
+.master-detail-service-name {
+    margin: 0 0 5px 0;
+    color: var(--master-detail-primary);
+}
+
+.master-detail-service-description {
+    margin: 5px 0 0 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.master-detail-service-meta {
+    text-align: right;
+    min-width: 150px;
+}
+
+.master-detail-service-price {
+    margin: 0 0 5px 0;
+    font-weight: bold;
+    color: #333;
+}
+
+.master-detail-book-btn {
+    background: var(--master-detail-primary);
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.master-detail-empty-services {
+    text-align: center;
+    color: #666;
+    margin-top: 10px;
+}

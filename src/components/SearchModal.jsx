@@ -1,29 +1,48 @@
-// src/components/SearchModal.jsx (ПОВНА ЗАМІНА: Імплементація Пошуку)
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-// 🔥 ІМПОРТУЄМО ДАНІ МАЙСТРІВ ТА ПОСЛУГ З Auth.jsx
-import { servicesData, mastersData } from '../pages/Auth'; 
-
+import { getServicesApi } from '../api/services';
+import { getMastersApi } from '../api/masters';
 
 const SearchModal = ({ isOpen, onClose }) => {
     const [searchTerm, setSearchTerm] = useState('');
+    const [services, setServices] = useState([]);
+    const [masters, setMasters] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
     useEffect(() => {
-        // Очищаємо поле пошуку та додаємо слухача ESC
         if (!isOpen) {
             setSearchTerm('');
+            return;
         }
-        
+
         const handleKeyDown = (event) => {
             if (event.key === 'Escape') {
                 onClose();
             }
         };
-        if (isOpen) {
-            document.addEventListener('keydown', handleKeyDown);
-        }
-        
+
+        document.addEventListener('keydown', handleKeyDown);
+
+        const loadData = async () => {
+            try {
+                setLoading(true);
+                setError('');
+                const [mastersRes, servicesRes] = await Promise.all([
+                    getMastersApi(),
+                    getServicesApi(),
+                ]);
+                setMasters(mastersRes || []);
+                setServices(servicesRes || []);
+            } catch (e) {
+                setError(e.message || 'Помилка завантаження даних для пошуку');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadData();
+
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
         };
@@ -31,71 +50,60 @@ const SearchModal = ({ isOpen, onClose }) => {
 
     if (!isOpen) return null;
 
-    // --- ФУНКЦІЯ РЕАЛЬНОГО ПОШУКУ ---
     const searchResults = useMemo(() => {
         const query = searchTerm.trim().toLowerCase();
         if (query.length < 2) return { masters: [], services: [] };
 
-        const results = {
-            masters: [],
-            services: []
-        };
-
-        // 1. Пошук Майстрів
-        results.masters = mastersData
-            .filter(master => 
-                master.name.toLowerCase().includes(query) || 
-                master.role.toLowerCase().includes(query)
+        const mastersResults = masters
+            .filter(
+                (master) =>
+                    master.name?.toLowerCase().includes(query) ||
+                    master.role?.toLowerCase().includes(query),
             )
-            // Обмежуємо 5 результатами для охайності
             .slice(0, 5)
-            .map(m => ({ 
-                id: m.id, 
-                name: m.name, 
+            .map((m) => ({
+                id: m.id,
+                name: m.name,
                 role: m.role,
                 type: 'master',
-                link: `/master/${m.id}` // Посилання на нову сторінку деталізації
+                link: `/master/${m.id}`,
             }));
 
-        // 2. Пошук Послуг
-        results.services = servicesData
-            .filter(service => 
-                service.name.toLowerCase().includes(query) || 
-                service.description.toLowerCase().includes(query) ||
-                service.category.toLowerCase().includes(query)
+        const servicesResults = services
+            .filter(
+                (service) =>
+                    service.name?.toLowerCase().includes(query) ||
+                    service.description?.toLowerCase().includes(query) ||
+                    service.category?.toLowerCase().includes(query),
             )
-             // Обмежуємо 5 результатами для охайності
             .slice(0, 5)
-            .map(s => ({ 
-                id: s.id, 
-                name: s.name, 
-                price: s.price, 
+            .map((s) => ({
+                id: s.id,
+                name: s.name,
+                price: s.price,
                 type: 'service',
-                link: `/service/${s.slug}`
+                link: `/service/${s.slug}`,
             }));
 
-        return results;
-    }, [searchTerm]);
+        return { masters: mastersResults, services: servicesResults };
+    }, [searchTerm, masters, services]);
 
     const handleResultClick = () => {
-        // Закриваємо модал після переходу
         onClose();
     };
 
-
-    // --- Стилі для пошукового модального вікна ---
     const modalOverlayStyle = {
         position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.9)', 
+        backgroundColor: 'rgba(0, 0, 0, 0.9)',
         display: 'flex',
         justifyContent: 'center',
-        alignItems: 'flex-start', 
-        paddingTop: '10vh', 
-        zIndex: 2000, 
+        alignItems: 'flex-start',
+        paddingTop: '10vh',
+        zIndex: 2000,
     };
 
     const modalContentStyle = {
@@ -112,7 +120,7 @@ const SearchModal = ({ isOpen, onClose }) => {
 
     const inputStyle = {
         padding: '15px 20px',
-        border: '1px solid #d81b60', 
+        border: '1px solid #d81b60',
         borderRadius: '8px',
         fontSize: '1.2rem',
         width: '100%',
@@ -121,7 +129,7 @@ const SearchModal = ({ isOpen, onClose }) => {
         background: '#444',
         color: 'white',
     };
-    
+
     const sectionTitleStyle = {
         color: '#d81b60',
         borderBottom: '1px solid #555',
@@ -130,7 +138,7 @@ const SearchModal = ({ isOpen, onClose }) => {
         marginBottom: '15px',
         fontSize: '1.2rem',
     };
-    
+
     const resultItemStyle = {
         padding: '12px',
         background: '#444',
@@ -141,59 +149,115 @@ const SearchModal = ({ isOpen, onClose }) => {
         textDecoration: 'none',
         color: 'white',
     };
-    
+
     const resultItemHoverStyle = {
-        background: '#d81b60', // Підсвічування
+        background: '#d81b60',
     };
 
+    const closeButtonStyle = {
+        position: 'absolute',
+        top: '10px',
+        right: '10px',
+        background: 'none',
+        border: 'none',
+        fontSize: '1.5rem',
+        color: '#ccc',
+        cursor: 'pointer',
+    };
 
     const renderResults = () => {
-        const { masters, services } = searchResults;
-        const totalResults = masters.length + services.length;
-        
+        if (loading) {
+            return (
+                <p style={{ color: '#ccc', textAlign: 'center' }}>
+                    Завантаження даних...
+                </p>
+            );
+        }
+
+        if (error) {
+            return (
+                <p style={{ color: '#ff6b6b', textAlign: 'center' }}>
+                    {error}
+                </p>
+            );
+        }
+
+        const { masters: mastersResults, services: servicesResults } =
+            searchResults;
+        const totalResults =
+            mastersResults.length + servicesResults.length;
+
         if (searchTerm.trim().length < 2) {
-            return <p style={{ color: '#ccc', textAlign: 'center' }}>Введіть мінімум 2 символи для початку пошуку.</p>;
+            return (
+                <p style={{ color: '#ccc', textAlign: 'center' }}>
+                    Введіть мінімум 2 символи для початку пошуку.
+                </p>
+            );
         }
 
         if (totalResults === 0) {
-            return <p style={{ color: '#ccc', textAlign: 'center' }}>За запитом "{searchTerm}" нічого не знайдено.</p>;
+            return (
+                <p style={{ color: '#ccc', textAlign: 'center' }}>
+                    За запитом "{searchTerm}" нічого не знайдено.
+                </p>
+            );
         }
-        
+
         return (
             <div>
-                {/* Результати Майстрів */}
-                {masters.length > 0 && (
+                {mastersResults.length > 0 && (
                     <>
-                        <h4 style={sectionTitleStyle}>Майстри ({masters.length})</h4>
-                        {masters.map(m => (
-                            <Link 
-                                to={m.link} 
-                                key={`m-${m.id}`} 
+                        <h4 style={sectionTitleStyle}>
+                            Майстри ({mastersResults.length})
+                        </h4>
+                        {mastersResults.map((m) => (
+                            <Link
+                                to={m.link}
+                                key={`m-${m.id}`}
                                 style={resultItemStyle}
-                                onMouseEnter={(e) => e.currentTarget.style.background = resultItemHoverStyle.background}
-                                onMouseLeave={(e) => e.currentTarget.style.background = resultItemStyle.background}
+                                onMouseEnter={(e) =>
+                                    (e.currentTarget.style.background =
+                                        resultItemHoverStyle.background)
+                                }
+                                onMouseLeave={(e) =>
+                                    (e.currentTarget.style.background =
+                                        resultItemStyle.background)
+                                }
                                 onClick={handleResultClick}
                             >
-                                <strong>🧑‍🎨 {m.name}</strong> — <span style={{color: '#ccc'}}>{m.role}</span>
+                                <strong>🧑‍🎨 {m.name}</strong> —{' '}
+                                <span style={{ color: '#ccc' }}>
+                                    {m.role}
+                                </span>
                             </Link>
                         ))}
                     </>
                 )}
 
-                {/* Результати Послуг */}
-                {services.length > 0 && (
+                {servicesResults.length > 0 && (
                     <>
-                        <h4 style={sectionTitleStyle}>Послуги ({services.length})</h4>
-                        {services.map(s => (
-                            <Link 
-                                to={s.link} 
-                                key={`s-${s.id}`} 
+                        <h4 style={sectionTitleStyle}>
+                            Послуги ({servicesResults.length})
+                        </h4>
+                        {servicesResults.map((s) => (
+                            <Link
+                                to={s.link}
+                                key={`s-${s.id}`}
                                 style={resultItemStyle}
-                                onMouseEnter={(e) => e.currentTarget.style.background = resultItemHoverStyle.background}
-                                onMouseLeave={(e) => e.currentTarget.style.background = resultItemStyle.background}
+                                onMouseEnter={(e) =>
+                                    (e.currentTarget.style.background =
+                                        resultItemHoverStyle.background)
+                                }
+                                onMouseLeave={(e) =>
+                                    (e.currentTarget.style.background =
+                                        resultItemStyle.background)
+                                }
                                 onClick={handleResultClick}
                             >
-                                💅 <strong>{s.name}</strong> — <span style={{color: '#ffc107'}}>{s.price} грн</span>
+                                💅 <strong>{s.name}</strong> —{' '}
+                                <span style={{ color: '#ffc107' }}>
+                                    {s.price} грн
+                                </span>
                             </Link>
                         ))}
                     </>
@@ -204,15 +268,26 @@ const SearchModal = ({ isOpen, onClose }) => {
 
     return (
         <div style={modalOverlayStyle} onClick={onClose}>
-            <div style={modalContentStyle} onClick={(e) => e.stopPropagation()}>
-                <button onClick={onClose} style={closeButtonStyle}>✕</button>
-                <h3 style={{color: 'white', marginBottom: '20px', textAlign: 'center'}}>
+            <div
+                style={modalContentStyle}
+                onClick={(e) => e.stopPropagation()}
+            >
+                <button onClick={onClose} style={closeButtonStyle}>
+                    ✕
+                </button>
+                <h3
+                    style={{
+                        color: 'white',
+                        marginBottom: '20px',
+                        textAlign: 'center',
+                    }}
+                >
                     Пошук послуг та майстрів
-                </h3> 
-                
+                </h3>
+
                 <form onSubmit={(e) => e.preventDefault()}>
-                    <input 
-                        type="text" 
+                    <input
+                        type="text"
                         placeholder="Введіть назву послуги чи ім'я майстра..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -221,27 +296,29 @@ const SearchModal = ({ isOpen, onClose }) => {
                     />
                 </form>
 
-                {/* Блок Результатів */}
-                <div style={{ maxHeight: 'calc(70vh - 180px)', overflowY: 'auto', paddingRight: '10px' }}>
+                <div
+                    style={{
+                        maxHeight: 'calc(70vh - 180px)',
+                        overflowY: 'auto',
+                        paddingRight: '10px',
+                    }}
+                >
                     {renderResults()}
                 </div>
 
-                <p style={{ marginTop: '20px', textAlign: 'center', fontSize: '0.9rem', color: '#ccc'}}>Натисніть ESC або поза вікном, щоб закрити</p>
+                <p
+                    style={{
+                        marginTop: '20px',
+                        textAlign: 'center',
+                        fontSize: '0.9rem',
+                        color: '#ccc',
+                    }}
+                >
+                    Натисніть ESC або поза вікном, щоб закрити
+                </p>
             </div>
         </div>
     );
-};
-
-// --- Стилі для пошукового модального вікна ---
-const closeButtonStyle = {
-    position: 'absolute',
-    top: '10px',
-    right: '10px',
-    background: 'none',
-    border: 'none',
-    fontSize: '1.5rem',
-    color: '#ccc', 
-    cursor: 'pointer',
 };
 
 export default SearchModal;

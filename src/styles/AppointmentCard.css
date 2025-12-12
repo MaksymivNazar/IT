@@ -1,0 +1,117 @@
+/* src/styles/AppointmentCard.css */
+
+.appointment-card {
+    width: 100%;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    box-sizing: border-box;
+}
+
+.appointment-card-main {
+    flex: 1;
+}
+
+/* Один рядок "лейбл + значення" */
+.appointment-card-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    margin-bottom: 6px;
+    font-size: 14px;
+}
+
+.appointment-card-label {
+    font-weight: 600;
+    margin-right: 6px;
+    color: #555555;
+}
+
+.appointment-card-value {
+    color: #222222;
+}
+
+/* Низ карточки: статус + кнопка */
+.appointment-card-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    min-width: 150px;
+}
+
+/* Бейдж статусу */
+.appointment-card-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* Кольори під різні стани */
+.appointment-card-status.status-pending {
+    background: #fff7e0;
+    color: #b68000;
+}
+
+.appointment-card-status.status-confirmed {
+    background: #e5f8ed;
+    color: #1b7b3f;
+}
+
+.appointment-card-status.status-completed {
+    background: #e7f1ff;
+    color: #2557a7;
+}
+
+.appointment-card-status.status-cancelled,
+.appointment-card-status.status-cancelled_by_master {
+    background: #ffe5e5;
+    color: #b3261e;
+}
+
+/* Кнопка "Скасувати" */
+.appointment-card-cancel-btn {
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid #e63946;
+    background: transparent;
+    color: #e63946;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+
+.appointment-card-cancel-btn:hover {
+    background: #e63946;
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.appointment-card-cancel-btn:active {
+    transform: translateY(0);
+}
+
+/* Адаптив для мобіли */
+@media (max-width: 600px) {
+    .appointment-card {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .appointment-card-footer {
+        align-items: flex-start;
+    }
+}

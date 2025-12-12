@@ -1,11 +1,11 @@
-// src/pages/ServiceDetail.jsx (ПОВНИЙ ВИПРАВЛЕНИЙ КОД)
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import '../styles/ServiceDetail.css';
 
-// 🔥 ІМПОРТУЄМО ВСЕ НЕОБХІДНЕ З AUTH.JSX
-import { saveAppointment, servicesData, mastersData, addToCart } from './Auth'; 
-
+import { addToCart } from '../api/cart.js';
+import { getServicesApi } from '../api/services';
+import { getMastersApi } from '../api/masters';
+import { createBookingApi } from '../api/bookings.js';
 
 const generateTimeSlots = (start = 10, end = 19, duration = 60) => {
     const slots = [];
@@ -21,284 +21,299 @@ const generateTimeSlots = (start = 10, end = 19, duration = 60) => {
     return slots;
 };
 
-// 🚨 ОНОВЛЕНО: Додано onCartUpdate та openInfoModal
-const ServiceDetail = ({ user, onCartUpdate, openInfoModal }) => { 
+const ServiceDetail = ({ user, onCartUpdate, openInfoModal }) => {
     const { slug } = useParams();
     const navigate = useNavigate();
-    
-    const service = servicesData.find(s => s.slug === slug);
-    
-    const availableMasters = service 
-        ? mastersData.filter(m => m.services.includes(service.id)) 
-        : [];
 
-    const [selectedMaster, setSelectedMaster] = useState(null);
+    const [service, setService] = useState(null);
+    const [masters, setMasters] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState('');
+
+    const [selectedMasterId, setSelectedMasterId] = useState('');
     const [selectedDate, setSelectedDate] = useState('');
     const [selectedTime, setSelectedTime] = useState('');
     const [availableTimes, setAvailableTimes] = useState([]);
 
     useEffect(() => {
-        if (service) {
-            const duration = service.minDuration;
-            setAvailableTimes(generateTimeSlots(10, 19, duration)); 
+        const load = async () => {
+            try {
+                setLoading(true);
+                setLoadError('');
+
+                const [servicesData, mastersData] = await Promise.all([
+                    getServicesApi(),
+                    getMastersApi(),
+                ]);
+
+                const foundService =
+                    servicesData.find((s) => s.slug === slug) || null;
+
+                if (!foundService) {
+                    setService(null);
+                    setLoadError('Послуга не знайдена. Перевірте посилання.');
+                    return;
+                }
+
+                setService(foundService);
+
+                const serviceMasters = mastersData.filter((m) => {
+                    if (!Array.isArray(m.services)) return false;
+                    return m.services.some((srv) => {
+                        if (srv && typeof srv === 'object') {
+                            return String(srv.id) === String(foundService.id);
+                        }
+                        return String(srv) === String(foundService.id);
+                    });
+                });
+
+                setMasters(serviceMasters);
+            } catch (e) {
+                console.error(e);
+                setLoadError('Не вдалося завантажити дані. Спробуйте пізніше.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        load();
+    }, [slug]);
+
+    useEffect(() => {
+        if (!service) {
+            setAvailableTimes([]);
+            return;
         }
+        const duration =
+            service.durationMinutes || service.minDuration || 60;
+        setAvailableTimes(generateTimeSlots(10, 19, duration));
     }, [service]);
 
-    if (!service) return <h2 style={{ padding: '50px', textAlign: 'center' }}>Послуга не знайдена. Перевірте slug.</h2>;
+    const selectedMaster = useMemo(
+        () =>
+            masters.find((m) => String(m.id) === String(selectedMasterId)) ||
+            null,
+        [masters, selectedMasterId]
+    );
 
-    const handleMasterSelect = (master) => {
-        setSelectedMaster(master);
+    const handleRequireAuth = () => {
+        if (openInfoModal) {
+            openInfoModal({
+                title: 'Потрібна авторизація',
+                message: 'Увійдіть у свій акаунт, щоб оформити запис.',
+            });
+        }
+        navigate('/auth');
+    };
+
+    const handleMasterSelect = (masterId) => {
+        setSelectedMasterId(String(masterId));
         setSelectedDate('');
         setSelectedTime('');
     };
-    
-    const handleDateSelect = (e) => {
+
+    const handleDateChange = (e) => {
         setSelectedDate(e.target.value);
         setSelectedTime('');
     };
 
     const handleTimeSelect = (time) => {
         setSelectedTime(time);
+    };
+
+    const handleBookNow = async () => {
+        if (!service || !selectedMasterId || !selectedDate || !selectedTime) {
+            window.alert('Будь ласка, оберіть майстра, дату та час.');
+            return;
+        }
+
         if (!user) {
+            handleRequireAuth();
+            return;
+        }
+
+        try {
+            const payload = {
+                userId: user.id,
+                serviceId: service.id,
+                masterId: selectedMasterId,
+                date: selectedDate,
+                time: selectedTime,
+            };
+
+            await createBookingApi(payload);
+
             if (openInfoModal) {
                 openInfoModal({
-                    title: "Потрібна авторизація",
-                    message: "Будь ласка, увійдіть, щоб завершити запис.",
+                    title: 'Запис оформлено',
+                    message: `Ви успішно записані на «${service.name}» ${selectedDate} о ${selectedTime}.`,
                 });
             }
-            navigate('/auth'); 
-            return;
+
+            navigate('/profile');
+        } catch (e) {
+            console.error(e);
+            window.alert('Не вдалося створити запис. Спробуйте ще раз.');
         }
     };
 
-    const handleBookNow = () => {
-        if (!selectedMaster || !selectedDate || !selectedTime) {
-            alert("Будь ласка, оберіть майстра, дату та час.");
-            return;
-        }
-        
-        if (!user) {
-            if (openInfoModal) {
-                openInfoModal({
-                    title: "Потрібна авторизація",
-                    message: "Будь ласка, увійдіть, щоб завершити запис.",
-                });
-            }
-            navigate('/auth');
-            return;
-        }
-
-        const newAppointment = {
-            userId: user.id,
-            service: service.name,
-            serviceImage: service.image, 
-            master: selectedMaster.name,
-            masterImage: selectedMaster.image, 
-            date: selectedDate,
-            time: selectedTime,
-            price: service.price,
-            status: 'pending'
-        };
-
-        saveAppointment(newAppointment); 
-        if (openInfoModal) {
-            openInfoModal({
-                title: "Запис успішно оформлено! ✅",
-                message: `Ви успішно записані на ${service.name} до ${selectedMaster.name} ${selectedDate} о ${selectedTime}!`,
-            });
-        }
-        navigate('/profile'); 
-    };
-    
-    // 🚨🚨🚨 ОНОВЛЕНО: ДОДАТИ ПОСЛУГУ ДО КОШИКА 🚨🚨🚨
     const handleAddToCart = () => {
+        if (!service) return;
         const added = addToCart(service);
+
         if (added) {
             if (openInfoModal) {
                 openInfoModal({
-                    title: "Додано до кошика! 🛍️",
-                    message: `Послугу "${service.name}" додано до кошика!`,
+                    title: 'Додано до кошика',
+                    message: `Послугу «${service.name}» додано до кошика.`,
                 });
             }
-            // 🔥 КЛЮЧОВА ЛОГІКА: Викликаємо оновлення лічильника
             if (onCartUpdate) {
-                onCartUpdate(); 
+                onCartUpdate();
             }
         } else {
             if (openInfoModal) {
                 openInfoModal({
-                    title: "Послуга вже в кошику",
-                    message: `Послуга "${service.name}" вже є в кошику.`,
+                    title: 'Послуга вже в кошику',
+                    message: `Послуга «${service.name}» уже є у вашому кошику.`,
                 });
             }
         }
     };
-    
-    // --- Стилі для компонентів ---
-    const pageContainerStyle = { 
-        padding: '40px 20px', 
-        maxWidth: '1000px', 
-        margin: '0 auto',
-        backgroundImage: `radial-gradient(ellipse at center, rgba(255, 255, 255, 0.7) 0%, rgba(255, 240, 245, 0.85) 50%, rgba(255, 230, 245, 0.9) 100%), url('https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?q=80&w=2000&auto=format&fit=crop')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
-        backgroundRepeat: 'no-repeat',
-        minHeight: '100vh',
-        width: '100%',
-    };
-    const sectionTitleStyle = { color: '#d81b60', borderBottom: '2px solid #eee', paddingBottom: '10px', marginBottom: '20px', marginTop: '40px' };
-    
-    // 🔥 ВИПРАВЛЕНО: Зменшено maxHeigh з 400px до 300px
-    const serviceImageStyle = { 
-        width: '100%', 
-        maxHeight: '300px', 
-        objectFit: 'cover', 
-        borderRadius: '15px', 
-        marginBottom: '30px' 
-    }; 
-    
-    const cardGridStyle = { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '20px' };
-    const inputStyle = { padding: '10px', border: '1px solid #ccc', borderRadius: '6px', width: '100%', boxSizing: 'border-box', marginBottom: '10px' };
-    const slotButtonStyle = { padding: '10px 15px', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' };
-    const selectedSlotStyle = { ...slotButtonStyle, background: '#d81b60', color: 'white' };
-    const availableSlotStyle = { ...slotButtonStyle, background: '#f0f0f0', color: '#333' };
-    const masterCardStyle = (master) => ({
-        border: `3px solid ${selectedMaster && selectedMaster.id === master.id ? '#d81b60' : '#ddd'}`, 
-        borderRadius: '12px',
-        padding: '15px',
-        cursor: 'pointer',
-        textAlign: 'center',
-        transition: 'border-color 0.2s, box-shadow 0.2s',
-        boxShadow: selectedMaster && selectedMaster.id === master.id ? '0 5px 15px rgba(216, 27, 96, 0.2)' : '0 2px 10px rgba(0,0,0,0.05)',
-    });
-    const masterImageStyle = {
-        width: '80px',
-        height: '80px',
-        borderRadius: '50%',
-        objectFit: 'cover',
-        marginBottom: '10px',
-    };
-    const bookButtonStyle = {
-        background: '#d81b60',
-        color: 'white',
-        border: 'none',
-        padding: '12px 25px',
-        borderRadius: '8px',
-        cursor: 'pointer',
-        fontWeight: 'bold',
-        marginTop: '30px',
-        width: '100%',
-        fontSize: '1.2rem',
-    };
-    
-    // 🔥 ВИПРАВЛЕНО: Зменшено розмір кнопки кошика
-    const cartButtonMainStyle = {
-        background: '#333', 
-        color: 'white',
-        border: 'none',
-        padding: '10px 20px', // Було 12px 25px
-        borderRadius: '6px', // Трохи менший радіус
-        cursor: 'pointer',
-        fontWeight: 'bold',
-        marginTop: '20px',
-        width: '100%',
-        fontSize: '1.0rem', // Було 1.2rem
-        maxWidth: '350px', // Додаємо обмеження ширини для кращого вигляду
-        margin: '20px auto', // Центруємо
-        display: 'block', // Робимо блоковим для центрування через margin: auto
-    };
+
+    if (loading) {
+        return (
+            <div className="service-detail-background">
+                <div className="service-detail-container">
+                    <p className="service-detail-loading">
+                        Завантаження даних послуги...
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
+    if (loadError) {
+        return (
+            <div className="service-detail-background">
+                <div className="service-detail-container">
+                    <p className="service-detail-error">{loadError}</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!service) {
+        return (
+            <div className="service-detail-background">
+                <div className="service-detail-container">
+                    <h2 className="service-detail-not-found">
+                        Послуга не знайдена. Перевірте посилання.
+                    </h2>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div style={{ 
-            width: '100%', 
-            minHeight: '100vh',
-            backgroundImage: `url('https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?q=80&w=2000&auto=format&fit=crop')`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundAttachment: 'fixed',
-            backgroundRepeat: 'no-repeat',
-        }}>
-            <div style={pageContainerStyle}>
-            {/* 1. Деталі Послуги */}
-            <h1 style={{ color: '#333', textAlign: 'center', marginBottom: '10px' }}>{service.name}</h1>
-            <p style={{ textAlign: 'center', color: '#d81b60', fontSize: '1.5rem', fontWeight: 'bold' }}>
-                {service.price} грн
-            </p>
-            
-            {service.image && <img src={service.image} alt={service.name} style={serviceImageStyle} />}
+        <div className="service-detail-background">
+            <div className="service-detail-container">
+                <h1 className="service-detail-title">{service.name}</h1>
+                <p className="service-detail-price">{service.price} грн</p>
 
-            <p style={{ fontSize: '1.1rem', color: '#555', lineHeight: 1.6, marginBottom: '40px' }}>
-                {service.description}
-            </p>
-            
-            {/* 🚨 КНОПКА ДОДАТИ ДО КОШИКА (Тепер менша) */}
-            <button 
-                onClick={handleAddToCart} 
-                style={cartButtonMainStyle}
-            >
-                🛍️ ДОДАТИ ПОСЛУГУ ДО КОШИКА
-            </button>
-            
-            <h2 style={{ ...sectionTitleStyle, marginTop: '30px' }}>Оформити Запис (Майстер/Дата)</h2>
-
-            {/* 2. Вибір Майстра */}
-            <h3 style={{ color: '#333', marginBottom: '15px' }}>Оберіть Майстра</h3>
-            <div style={cardGridStyle}>
-                {availableMasters.map(master => (
-                    <div 
-                        key={master.id} 
-                        style={masterCardStyle(master)} 
-                        onClick={() => handleMasterSelect(master)}
-                    >
-                        <img src={master.image} alt={master.name} style={masterImageStyle} /> 
-                        <h4 style={{ margin: '5px 0' }}>{master.name}</h4>
-                        <p style={{ fontSize: '0.9rem', color: '#777' }}>{master.role}</p>
-                    </div>
-                ))}
-            </div>
-
-            {selectedMaster && (
-                <>
-                    {/* 3. Вибір Дати */}
-                    <h3 style={{ ...sectionTitleStyle, color: '#333' }}>Оберіть Дату</h3>
-                    <input 
-                        type="date" 
-                        value={selectedDate}
-                        onChange={handleDateSelect}
-                        min={new Date().toISOString().split('T')[0]} 
-                        style={inputStyle}
+                {service.image && (
+                    <img
+                        src={service.image}
+                        alt={service.name}
+                        className="service-detail-image"
                     />
-                    
-                    {selectedDate && (
-                        <>
-                            {/* 4. Вибір Часу */}
-                            <h3 style={{ ...sectionTitleStyle, color: '#333' }}>Оберіть Час</h3>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                                {availableTimes.map(time => (
-                                    <button
-                                        key={time}
-                                        style={selectedTime === time ? selectedSlotStyle : availableSlotStyle}
-                                        onClick={() => setSelectedTime(time)}
-                                    >
-                                        {time}
-                                    </button>
-                                ))}
-                            </div>
-                        </>
-                    )}
-                </>
-            )}
+                )}
 
-            {/* 5. Кнопка Запису (показується при повному виборі) */}
-            {selectedMaster && selectedDate && selectedTime && (
-                <button 
-                    onClick={handleBookNow} 
-                    style={bookButtonStyle}
+                <p className="service-detail-description">
+                    {service.description}
+                </p>
+
+                <button
+                    type="button"
+                    className="service-detail-cart-btn"
+                    onClick={handleAddToCart}
                 >
-                    ПІДТВЕРДИТИ ЗАПИС НА {selectedTime}
+                    Додати послугу до кошика
                 </button>
-            )}
+
+                <h2 className="service-detail-section-title">
+                    Оформити запис
+                </h2>
+
+                <h3 className="service-detail-subtitle">Оберіть майстра</h3>
+                <div className="service-detail-masters-grid">
+                    {masters.map((master) => (
+                        <div
+                            key={master.id}
+                            className={`service-detail-master-card${
+                                String(selectedMasterId) === String(master.id)
+                                    ? ' selected'
+                                    : ''
+                            }`}
+                            onClick={() => handleMasterSelect(master.id)}
+                        >
+                            <img
+                                src={master.photoUrl || master.image}
+                                alt={master.fullName || master.name}
+                                className="service-detail-master-image"
+                            />
+                            <h4 className="service-detail-master-name">
+                                {master.fullName || master.name}
+                            </h4>
+                            <p className="service-detail-master-role">{master.role}</p>
+                        </div>
+                    ))}
+                </div>
+
+                {selectedMaster && (
+                    <>
+                        <h3 className="service-detail-subtitle">Оберіть дату</h3>
+                        <input
+                            type="date"
+                            value={selectedDate}
+                            onChange={handleDateChange}
+                            min={new Date().toISOString().split('T')[0]}
+                            className="service-detail-input"
+                        />
+
+                        {selectedDate && (
+                            <>
+                                <h3 className="service-detail-subtitle">
+                                    Оберіть час
+                                </h3>
+                                <div className="service-detail-slots">
+                                    {availableTimes.map((time) => (
+                                        <button
+                                            key={time}
+                                            type="button"
+                                            className={`service-detail-slot${
+                                                selectedTime === time ? ' selected' : ''
+                                            }`}
+                                            onClick={() => handleTimeSelect(time)}
+                                        >
+                                            {time}
+                                        </button>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </>
+                )}
+
+                {selectedMaster && selectedDate && selectedTime && (
+                    <button
+                        type="button"
+                        className="service-detail-book-btn"
+                        onClick={handleBookNow}
+                    >
+                        Підтвердити запис на {selectedTime}
+                    </button>
+                )}
             </div>
         </div>
     );

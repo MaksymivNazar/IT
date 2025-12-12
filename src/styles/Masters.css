@@ -1,0 +1,118 @@
+:root {
+    --masters-primary: #d81b60;
+    --masters-text-dark: #333333;
+    --masters-error: #c62828;
+}
+
+.masters-wrapper {
+    width: 100%;
+    min-height: 100vh;
+    background-image: url("https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=2000&auto=format&fit=crop");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+}
+
+.masters-page {
+    padding: 40px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background-image: radial-gradient(
+            ellipse at center,
+            rgba(255, 255, 255, 0.7) 0%,
+            rgba(240, 250, 255, 0.85) 50%,
+            rgba(230, 245, 255, 0.9) 100%
+    );
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.masters-title {
+    text-align: center;
+    color: var(--masters-text-dark);
+    margin-bottom: 10px;
+}
+
+.masters-subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+}
+
+.masters-status,
+.masters-error {
+    text-align: center;
+    font-size: 1rem;
+}
+
+.masters-error {
+    color: var(--masters-error);
+    background-color: #fee;
+    padding: 10px;
+    border-radius: 8px;
+    max-width: 400px;
+    margin: 40px auto 0;
+}
+
+.masters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.master-card {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    text-decoration: none;
+    color: #333;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    background: white;
+    display: flex;
+    flex-direction: column;
+}
+
+.master-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.master-card__image {
+    width: 100%;
+    height: 350px;
+    object-fit: cover;
+}
+
+.master-card__content {
+    padding: 20px;
+    text-align: center;
+}
+
+.master-card__name {
+    margin: 0 0 5px 0;
+    color: var(--masters-primary);
+}
+
+.master-card__role {
+    margin: 0 0 10px 0;
+    color: #777;
+    font-weight: bold;
+}
+
+.master-card__about {
+    margin: 0 0 15px 0;
+    color: #555;
+    font-size: 0.9rem;
+}
+
+.master-card__rating {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--masters-primary);
+}

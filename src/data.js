@@ -99,7 +99,7 @@ export const mastersData = [
     image: "https://kafo.kiev.ua/uploads/p_139_61321742.jpg", 
     about: "Спеціалізується на складних фарбуваннях (AirTouch, Balayage) та стрижках. Досвід 10 років. Завжди актуальна.",
     experience: "10 років",
-    phone: "+380 50 123 4567",
+    phone: "+380501234567",
     email: "olena.petrivna@salon.ua",
     services: [1, 2, 4], // ID послуг, які надає майстер
     schedule: {
@@ -121,7 +121,7 @@ export const mastersData = [
     image: "https://kafo.kiev.ua/uploads/p_140_35639904.jpg", 
     about: "Творчий підхід до дизайну нігтів, працює лише з преміум-матеріалами. Швидкість та якість.",
     experience: "7 років",
-    phone: "+380 50 234 5678",
+    phone: "+380502345678",
     email: "marina.ivanova@salon.ua",
     services: [3, 4], // Манікюр та Педикюр
     schedule: {
@@ -143,7 +143,7 @@ export const mastersData = [
     image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTT4dmjRBIUpC6TnSSjgKrsaC9j-8X7J6du2g&s", 
     about: "Створюю образи для червоних доріжок. Професійний макіяж для будь-яких подій.",
     experience: "5 років",
-    phone: "+380 50 345 6789",
+    phone: "+380503456789",
     email: "alina.kravets@salon.ua",
     services: [5, 6], // Макіяж та Ламінування брів
     schedule: {

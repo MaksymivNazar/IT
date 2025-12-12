@@ -1,0 +1,248 @@
+.services-page-background {
+    width: 100%;
+    min-height: 100vh;
+    background-image: url('https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=2000&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+}
+
+.services-page {
+    padding: 40px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+    background-image: radial-gradient(
+            ellipse at center,
+            rgba(255, 255, 255, 0.7) 0%,
+            rgba(255, 240, 245, 0.85) 50%,
+            rgba(255, 230, 245, 0.9) 100%
+    ),
+    url('https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=2000&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+    width: 100%;
+}
+
+.services-title {
+    color: #d81b60;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.services-subtitle {
+    text-align: center;
+    color: #666666;
+    margin-bottom: 40px;
+    font-size: 1.2rem;
+}
+
+/* FILTER PANEL */
+
+.services-filter-panel {
+    background: #ffffff;
+    border: 1px solid #eeeeee;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.services-filter-title {
+    color: #333333;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #eeeeee;
+}
+
+.services-filter-block {
+    margin-bottom: 20px;
+}
+
+.services-input-label {
+    font-weight: 500;
+    color: #666666;
+    margin-bottom: 5px;
+    display: block;
+    font-size: 0.9rem;
+}
+
+.services-categories {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.services-category-btn {
+    background: #ffffff;
+    color: #555555;
+    border: 1px solid #cccccc;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.services-category-btn.active {
+    background: #d81b60;
+    color: #ffffff;
+    border-color: #d81b60;
+    font-weight: bold;
+    box-shadow: 0 3px 6px rgba(216, 27, 96, 0.2);
+}
+
+.services-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #dddddd;
+    border-radius: 20px;
+    box-sizing: border-box;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    background-color: #ffffff;
+}
+
+.services-input:focus {
+    border-color: #d81b60;
+    box-shadow: 0 0 0 2px rgba(216, 27, 96, 0.1);
+    outline: none;
+}
+
+.services-price-row {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.services-price-field {
+    flex: 1;
+}
+
+/* GRID + CARDS */
+
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.services-card {
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    text-decoration: none;
+    color: #333333;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.services-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.services-card-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-bottom: 1px solid #eeeeee;
+}
+
+.services-card-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.services-card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.services-card-category {
+    color: #777777;
+    font-size: 0.9rem;
+}
+
+.services-card-price {
+    color: #d81b60;
+    font-weight: bold;
+    font-size: 1.4rem;
+}
+
+.services-card-name {
+    margin: 0 0 10px 0;
+}
+
+.services-card-description {
+    color: #666666;
+    font-size: 0.9rem;
+    flex-grow: 1;
+}
+
+.services-cart-btn {
+    background: #333333;
+    color: #ffffff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.services-cart-btn:hover {
+    background: #000000;
+}
+
+.services-detail-btn {
+    text-align: center;
+    color: #d81b60;
+    font-weight: bold;
+    padding: 5px 0;
+    border: 1px solid #d81b60;
+    border-radius: 5px;
+    font-size: 0.9rem;
+}
+
+.services-empty {
+    text-align: center;
+    color: #d81b60;
+    font-size: 1.2rem;
+    margin-top: 40px;
+}
+
+.services-loading {
+    text-align: center;
+    margin-top: 20px;
+    color: #555555;
+}
+
+.services-error {
+    text-align: center;
+    margin-top: 20px;
+    color: #c62828;
+}
+
+
+@media (max-width: 600px) {
+    .services-price-row {
+        flex-direction: column;
+    }
+}

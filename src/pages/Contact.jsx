@@ -1,10 +1,6 @@
-// src/pages/Contact.jsx (ПОВНИЙ ВИПРАВЛЕНИЙ КОД З InfoModal)
-
 import React from 'react';
 
-// 🔥 ПРИЙМАЄМО openInfoModal ЯК ПРОПС
-const Contact = ({ openInfoModal }) => { 
-    // Стилі для форми
+const Contact = ({ openInfoModal }) => {
     const formStyle = { 
         maxWidth: '500px', 
         margin: '0 auto', 
@@ -75,8 +71,6 @@ const Contact = ({ openInfoModal }) => {
             <p style={{ textAlign: 'center', fontSize: '1.2rem', color: '#666', marginBottom: '50px' }}>Ми завжди раді вашому візиту!</p>
 
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', maxWidth: '1000px', margin: '0 auto' }}>
-                
-                {/* Інформаційний Блок */}
                 <div style={{ flex: '1 1 300px', padding: '20px', textAlign: 'left' }}>
                     <h2 style={{ color: '#333', marginBottom: '20px' }}>Наші Дані</h2>
                     <div style={{ fontSize: '1.1rem', lineHeight: 2.5 }}>
@@ -100,7 +94,6 @@ const Contact = ({ openInfoModal }) => {
                 </div>
             </div>
 
-            {/* Форма Зворотного Зв'язку */}
             <div style={{ padding: '50px 20px', textAlign: 'center', marginTop: '30px' }}>
                 <h2 style={{ color: '#333', marginBottom: '30px' }}>Напишіть нам</h2>
                 <form onSubmit={handleFormSubmit} style={formStyle}>

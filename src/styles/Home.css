@@ -1,0 +1,261 @@
+.home-hero {
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+    url('https://images.unsplash.com/photo-1560066984-138dadb4c035?ixlib=rb-1.2.1&auto=format&fit=crop&w=1600&q=80');
+    background-size: cover;
+    background-position: center;
+    height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    text-align: center;
+}
+
+.home-hero-inner {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.home-hero-title {
+    font-size: 4rem;
+    margin: 0;
+}
+
+.home-hero-subtitle {
+    font-size: 1.5rem;
+    margin-bottom: 30px;
+}
+
+.home-hero-btn {
+    background: #d81b60;
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    text-decoration: none;
+    color: #ffffff;
+    border-radius: 8px;
+    border: none;
+}
+
+/* MARBLE BACKGROUND */
+
+.home-marble-background {
+    background-image: url('https://abrakadabra.fun/uploads/posts/2022-01/1642320157_1-abrakadabra-fun-p-krasivii-mramornii-fon-1.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+}
+
+/* SECTIONS */
+
+.home-section {
+    padding: 80px 20px;
+    text-align: center;
+    color: #333333;
+}
+
+.home-section-title {
+    margin-bottom: 50px;
+}
+
+/* INFO SECTION */
+
+.home-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 40px;
+    margin-top: 40px;
+}
+
+.home-info-card {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.home-info-icon {
+    font-size: 2rem;
+    color: #d81b60;
+    margin-bottom: 10px;
+}
+
+/* SERVICES SECTION */
+
+.home-services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.home-service-card {
+    text-decoration: none;
+    color: inherit;
+    text-align: left;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    background: #ffffff;
+}
+
+.home-service-card:hover {
+    transform: translateY(-5px);
+}
+
+.home-service-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.home-service-content {
+    padding: 20px;
+}
+
+.home-service-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.home-service-category {
+    color: #888888;
+    font-size: 0.9rem;
+}
+
+.home-service-price {
+    color: #d81b60;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.home-service-name {
+    margin: 0 0 10px;
+}
+
+.home-service-description {
+    color: #666666;
+    font-size: 0.9rem;
+}
+
+.home-section-btn {
+    background: #d81b60;
+    margin-top: 50px;
+    padding: 12px 25px;
+    text-decoration: none;
+    color: #ffffff;
+    border-radius: 8px;
+    border: none;
+}
+
+/* MASTERS SECTION */
+
+.home-masters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.home-master-card {
+    padding: 20px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.home-master-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 0 auto 15px;
+}
+
+.home-master-name {
+    margin: 0 0 5px;
+}
+
+.home-master-role {
+    color: #d81b60;
+    margin: 0 0 10px;
+    font-weight: 600;
+}
+
+.home-master-about {
+    font-size: 0.9rem;
+    color: #666666;
+}
+
+/* REVIEWS SECTION */
+
+.home-reviews-section {
+    background: linear-gradient(
+            rgba(0, 0, 0, 0.7),
+            rgba(0, 0, 0, 0.7)
+    ),
+    url('https://homeinteriors.com.ua/wp-content/uploads/2023/09/interyer-salonu-krasy-loft.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    padding: 80px 0;
+}
+
+.home-reviews-title {
+    color: #ffffff;
+    margin-bottom: 40px;
+    font-size: 2.5rem;
+    text-align: center;
+}
+
+.home-reviews-wrapper {
+    overflow: hidden;
+}
+
+.home-reviews-container {
+    display: flex;
+    gap: 30px;
+    padding: 20px 0;
+    animation: scrollReviews 30s linear infinite;
+}
+
+.home-review-card {
+    flex: 0 0 auto;
+    width: 350px;
+    padding: 30px;
+    background: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    color: #333333;
+}
+
+.home-review-stars {
+    font-size: 2rem;
+    color: #d81b60;
+    margin-bottom: 10px;
+}
+
+.home-review-text {
+    font-style: italic;
+    color: #555555;
+    margin-bottom: 15px;
+    line-height: 1.6;
+}
+
+.home-review-author {
+    font-weight: bold;
+    color: #333333;
+}
+
+@keyframes scrollReviews {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}

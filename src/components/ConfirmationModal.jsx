@@ -1,5 +1,3 @@
-// src/components/ConfirmationModal.jsx
-
 import React from 'react';
 
 const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel }) => {
@@ -20,7 +18,6 @@ const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel }) => {
     );
 };
 
-// --- Стилі для модального вікна ---
 const modalOverlayStyle = {
     position: 'fixed',
     top: 0,
@@ -75,7 +72,7 @@ const baseButtonStyle = {
 
 const confirmButtonStyle = {
     ...baseButtonStyle,
-    backgroundColor: '#d81b60', // Акцентний колір
+    backgroundColor: '#d81b60',
     color: 'white',
 };
 

@@ -1,8 +1,5 @@
-// src/pages/Gallery.jsx
-
 import React from 'react';
 
-// 🔥 ФІКТИВНІ ДАНІ ДЛЯ ГАЛЕРЕЇ З ОНОВЛЕНИМИ ЗОБРАЖЕННЯМИ
 const galleryImages = [
     // 1. Манікюр з дизайном
     { id: 1, url: 'https://img.tsn.ua/cached/348/tsn-e4d2bbace79d9196864837254e47d00a/thumbs/1200x630/9a/d5/657cbf92001de86d39e8cb7d6fb2d59a.jpeg', alt: 'Манікюр з дизайном', title: 'Манікюр з дизайном' },
@@ -48,7 +45,7 @@ const Gallery = () => {
         fontWeight: 'bold',
         marginTop: '10px',
         marginBottom: '20px',
-        textAlign: 'left', // Щоб назва була не по центру картки
+        textAlign: 'left',
     };
 
     const pageContainerStyle = {

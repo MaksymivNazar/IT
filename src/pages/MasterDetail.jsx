@@ -1,189 +1,228 @@
-// src/pages/MasterDetail.jsx (НОВИЙ ФАЙЛ)
-
-import React, { useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-// 🔥 ІМПОРТУЄМО ДАНІ З AUTH.JSX
-import { mastersData, servicesData, addToCart } from './Auth'; 
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { getMasterByIdApi } from '../api/masters';
+import { fetchServicesByMaster } from '../api/services';
+import { addToCart } from '../api/cart';
+import '../styles/MasterDetail.css';
 
 const MasterDetail = ({ onCartUpdate, openInfoModal }) => {
     const { masterId } = useParams();
     const navigate = useNavigate();
-    
-    // 1. Пошук Майстра
-    const master = mastersData.find(m => String(m.id) === masterId);
 
-    // Якщо майстра не знайдено
-    if (!master) {
-        return (
-            <div style={{ padding: '40px', textAlign: 'center' }}>
-                <h1 style={{ color: '#d81b60' }}>Майстра не знайдено 😢</h1>
-                <p>Перевірте посилання або поверніться на сторінку команди.</p>
-                <button 
-                    onClick={() => navigate('/masters')} 
-                    style={{ padding: '10px 20px', background: '#d81b60', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', marginTop: '20px' }}
-                >
-                    До Команди
-                </button>
-            </div>
-        );
-    }
-    
-    // 2. Фільтрація послуг, які надає майстер
-    const masterServices = servicesData.filter(service => 
-        master.services.includes(service.id)
-    );
+    const [master, setMaster] = useState(null);
+    const [services, setServices] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
-    // 3. Допоміжні дані (імітація)
-    const masterReviews = [
-        { id: 1, text: "Робота виконана ідеально! Дуже уважний майстер.", author: "Анна К.", rating: 5 },
-        { id: 2, text: "Швидко і якісно. Рекомендую!", author: "Сергій П.", rating: 5 },
-    ];
-    
-    // 4. Логіка додавання послуги в кошик
+    useEffect(() => {
+        const load = async () => {
+            setLoading(true);
+            setError('');
+
+            try {
+                const [masterData, servicesData] = await Promise.all([
+                    getMasterByIdApi(masterId),
+                    fetchServicesByMaster(masterId),
+                ]);
+
+                setMaster(masterData);
+                setServices(servicesData);
+            } catch (err) {
+                setError(err.message || 'Помилка завантаження даних майстра');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        load();
+    }, [masterId]);
+
     const handleAddToCart = (service) => {
         const added = addToCart(service);
+
         if (added) {
             if (openInfoModal) {
                 openInfoModal({
-                    title: "Додано до кошика! 🛍️",
-                    message: `Послугу "${service.name}" додано до кошика!`,
+                    title: 'Додано до кошика 🛍️',
+                    message: `Послугу «${service.name}» додано до кошика.`,
+                    type: 'success',
                 });
             }
             if (onCartUpdate) onCartUpdate();
         } else {
             if (openInfoModal) {
                 openInfoModal({
-                    title: "Послуга вже в кошику",
-                    message: `Послуга "${service.name}" вже є в кошику.`,
+                    title: 'Послуга вже в кошику',
+                    message: `Послуга «${service.name}» вже є в кошику.`,
+                    type: 'info',
                 });
             }
         }
     };
-    
-    // --- Стилі ---
-    const pageContainerStyle = { 
-        padding: '40px 20px', 
-        maxWidth: '1000px', 
-        margin: '0 auto',
-        backgroundImage: `radial-gradient(ellipse at center, rgba(255, 255, 255, 0.7) 0%, rgba(250, 240, 250, 0.85) 50%, rgba(245, 230, 245, 0.9) 100%), url('https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=2000&auto=format&fit=crop')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
-        backgroundRepeat: 'no-repeat',
-        minHeight: '100vh',
-        width: '100%',
-    };
-    const headerStyle = { display: 'flex', gap: '40px', alignItems: 'flex-start', marginBottom: '40px', flexWrap: 'wrap' };
-    const imageStyle = { width: '250px', height: '250px', borderRadius: '50%', objectFit: 'cover', boxShadow: '0 8px 25px rgba(0,0,0,0.15)' };
-    const infoStyle = { flexGrow: 1, minWidth: '300px' };
-    const sectionTitleStyle = { color: '#d81b60', borderBottom: '2px solid #eee', paddingBottom: '10px', marginBottom: '20px', marginTop: '40px' };
-    const serviceCardStyle = { 
-        padding: '20px', 
-        border: '1px solid #f0f0f0', 
-        borderRadius: '10px', 
-        boxShadow: '0 2px 10px rgba(0,0,0,0.05)', 
-        marginBottom: '15px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        background: 'white',
-    };
-    const bookButtonStyle = {
-        background: '#d81b60',
-        color: 'white',
-        border: 'none',
-        padding: '10px 20px',
-        borderRadius: '25px',
-        fontWeight: 'bold',
-        cursor: 'pointer',
-        fontSize: '0.9rem',
-    };
-    
-    // Додаємо інформацію "about" та "rating" з імітаційних даних, якщо їх немає в Auth.jsx
-    const masterDetails = {
-        1: { about: "Спеціалізується на складних фарбуваннях (AirTouch, Balayage) та стрижках. Досвід 10 років. Завжди актуальна.", rating: 4.9, experience: '10 років' },
-        2: { about: "Творчий підхід до дизайну нігтів, працює лише з преміум-матеріалами. Швидкість та якість.", rating: 4.8, experience: '7 років' },
-        3: { about: "Створюю образи для червоних доріжок. Професійний макіяж для будь-яких подій.", rating: 4.7, experience: '5 років' },
-        4: { about: "Універсальний майстер, який володіє всіма техніками. Швидкий запис, висока якість.", rating: 5.0, experience: '8 років' },
-    };
-    const details = masterDetails[master.id] || {};
 
-
-    return (
-        <div style={{ 
-            width: '100%', 
-            minHeight: '100vh',
-            backgroundImage: `url('https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=2000&auto=format&fit=crop')`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundAttachment: 'fixed',
-            backgroundRepeat: 'no-repeat',
-        }}>
-            <div className="container animate" style={pageContainerStyle}>
-            <div style={headerStyle}>
-                {/* 1. Фото Майстра */}
-                <img src={master.image} alt={master.name} style={imageStyle} />
-                
-                {/* 2. Інформація */}
-                <div style={infoStyle}>
-                    <h1 style={{ marginBottom: '10px', color: '#333' }}>{master.name}</h1>
-                    <h2 style={{ color: '#d81b60', margin: '0 0 20px 0', fontWeight: '400' }}>{master.role}</h2>
-                    
-                    <p style={{ fontSize: '1.1rem', lineHeight: 1.6, color: '#555' }}>
-                        {details.about || "Спеціаліст високого рівня у своїй галузі. Завжди слідкую за останніми трендами та використовую лише найкращі матеріали для досягнення ідеального результату."}
-                    </p>
-                    
-                    <div style={{ marginTop: '20px', fontSize: '1rem' }}>
-                        <p>⭐️ <strong>Рейтинг:</strong> {master.rating || details.rating || '5.0'} / 5.0</p>
-                        <p>📅 <strong>Досвід:</strong> {master.experience || details.experience || 'від 5 років'}</p>
-                        {master.phone && <p>📞 <strong>Телефон:</strong> {master.phone}</p>}
-                        {master.email && <p>✉️ <strong>Email:</strong> {master.email}</p>}
-                    </div>
+    if (loading) {
+        return (
+            <div className="master-detail-wrapper">
+                <div className="master-detail-page container animate">
+                    <p className="master-detail-status">Завантаження даних майстра...</p>
                 </div>
             </div>
-            
-            {/* 3. Перелік Послуг Майстра */}
-            <h2 style={sectionTitleStyle}>Послуги, які надає {master.name} ({masterServices.length})</h2>
-            <div style={{ marginTop: '20px' }}>
-                {masterServices.length > 0 ? (
-                    masterServices.map(service => (
-                        <div key={service.id} style={serviceCardStyle}>
-                            <div>
-                                <Link to={`/service/${service.slug}`} style={{ textDecoration: 'none', color: '#333' }}>
-                                    <h4 style={{ margin: 0, color: '#d81b60' }}>{service.name}</h4>
-                                </Link>
-                                <p style={{ margin: '5px 0 0 0', color: '#666', fontSize: '0.9rem' }}>
-                                    {service.description.substring(0, 100)}...
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="master-detail-wrapper">
+                <div className="master-detail-page container animate">
+                    <p className="master-detail-error">{error}</p>
+                    <button
+                        type="button"
+                        className="master-detail-back-btn"
+                        onClick={() => navigate('/masters')}
+                    >
+                        До команди
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    if (!master) {
+        return (
+            <div className="master-detail-wrapper">
+                <div className="master-detail-page container animate">
+                    <h1 className="master-detail-not-found-title">Майстра не знайдено 😢</h1>
+                    <p className="master-detail-not-found-text">
+                        Перевірте посилання або поверніться на сторінку команди.
+                    </p>
+                    <button
+                        type="button"
+                        className="master-detail-back-btn"
+                        onClick={() => navigate('/masters')}
+                    >
+                        До команди
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    const name =
+        master.fullName || master.name || master.user?.email || 'Майстер салону';
+
+    const role =
+        master.specialization || master.position || 'Майстер салону';
+
+    const about =
+        master.description ||
+        'Спеціаліст високого рівня у своїй галузі. Використовує сучасні техніки та якісні матеріали.';
+
+    const experienceText = master.experienceYears
+        ? `${master.experienceYears} років досвіду`
+        : 'Досвід не вказано';
+
+    const ratingText =
+        typeof master.rating === 'number'
+            ? `${master.rating.toFixed(1)} / 5.0`
+            : 'Оцінка буде додана згодом';
+
+    const photo =
+        master.photoUrl ||
+        master.avatarUrl ||
+        `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            name,
+        )}&background=B76E79&color=fff&bold=true&size=256`;
+
+    return (
+        <div className="master-detail-wrapper">
+            <div className="master-detail-page container animate">
+                <div className="master-detail-header">
+                    <img
+                        src={photo}
+                        alt={name}
+                        className="master-detail-photo"
+                    />
+
+                    <div className="master-detail-info">
+                        <h1 className="master-detail-name">{name}</h1>
+                        <h2 className="master-detail-role">{role}</h2>
+
+                        <p className="master-detail-about">{about}</p>
+
+                        <div className="master-detail-meta">
+                            <p>
+                                <span className="master-detail-meta-label">⭐ Рейтинг:</span>{' '}
+                                {ratingText}
+                            </p>
+                            <p>
+                                <span className="master-detail-meta-label">📅 Досвід:</span>{' '}
+                                {experienceText}
+                            </p>
+                            {master.phone && (
+                                <p>
+                                    <span className="master-detail-meta-label">📞 Телефон:</span>{' '}
+                                    {master.phone}
                                 </p>
-                            </div>
-                            <div style={{ textAlign: 'right', minWidth: '150px' }}>
-                                <p style={{ margin: '0 0 5px 0', fontWeight: 'bold', color: '#333' }}>
-                                    {service.price} грн
+                            )}
+                            {master.email && (
+                                <p>
+                                    <span className="master-detail-meta-label">✉️ Email:</span>{' '}
+                                    {master.email}
                                 </p>
-                                <button 
-                                    onClick={() => handleAddToCart(service)} 
-                                    style={bookButtonStyle}
-                                >
-                                    Записатися / Кошик
-                                </button>
-                            </div>
+                            )}
+                            {master.user?.email && !master.email && (
+                                <p>
+                                    <span className="master-detail-meta-label">✉️ Email:</span>{' '}
+                                    {master.user.email}
+                                </p>
+                            )}
                         </div>
-                    ))
-                ) : (
-                    <p style={{ textAlign: 'center', color: '#666' }}>На жаль, послуги для цього майстра не знайдено.</p>
-                )}
-            </div>
-            
-            {/* 4. Відгуки (імітація) */}
-            <h2 style={sectionTitleStyle}>Останні Відгуки</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-                {masterReviews.map(review => (
-                    <div key={review.id} style={{ padding: '20px', borderLeft: '3px solid #d81b60', background: '#fcfcfc', borderRadius: '5px' }}>
-                        <p style={{ margin: '0 0 10px 0', fontStyle: 'italic', color: '#444' }}>"{review.text}"</p>
-                        <p style={{ margin: 0, fontWeight: 'bold', color: '#d81b60' }}>{review.author}</p>
                     </div>
-                ))}
-            </div>
+                </div>
+
+                <h2 className="master-detail-section-title">
+                    Послуги, які надає {name} ({services.length})
+                </h2>
+
+                <div className="master-detail-services">
+                    {services.length > 0 ? (
+                        services.map((service) => (
+                            <div
+                                key={service.id}
+                                className="master-detail-service-card"
+                            >
+                                <div className="master-detail-service-main">
+                                    <h4 className="master-detail-service-name">
+                                        {service.name}
+                                    </h4>
+                                    <p className="master-detail-service-description">
+                                        {service.description
+                                            ? service.description.length > 100
+                                                ? `${service.description.slice(0, 100)}...`
+                                                : service.description
+                                            : 'Опис послуги буде додано пізніше.'}
+                                    </p>
+                                </div>
+                                <div className="master-detail-service-meta">
+                                    <p className="master-detail-service-price">
+                                        {service.price} грн
+                                    </p>
+                                    <button
+                                        type="button"
+                                        className="master-detail-book-btn"
+                                        onClick={() => handleAddToCart(service)}
+                                    >
+                                        Записатися / Кошик
+                                    </button>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <p className="master-detail-empty-services">
+                            На жаль, послуги для цього майстра не знайдено.
+                        </p>
+                    )}
+                </div>
             </div>
         </div>
     );

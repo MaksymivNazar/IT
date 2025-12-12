@@ -1,18 +1,14 @@
-// src/components/SuccessModal.jsx
-
 import React from 'react';
 
-// --- Визначення Палітри (для використання в стилях) ---
 const PALETTE = { 
-    primary: '#B76E79',     // Основний акцент (Dusty Rose)
-    secondary: '#D4B097',   // Додатковий акцент (Beige)
+    primary: '#B76E79',
+    secondary: '#D4B097',
     textDark: '#333333',
     textLight: '#F5F5F5',
     error: '#C62828',
-    success: '#4CAF50',     // Професійний зелений для успіху
+    success: '#4CAF50',
 };
 
-// --- Стилі для SuccessModal (ОНОВЛЕНО) ---
 const modalOverlayStyle = {
     position: 'fixed',
     top: 0,
@@ -24,7 +20,7 @@ const modalOverlayStyle = {
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 4000, 
-    fontFamily: 'Georgia, "Times New Roman", Times, serif', // Стиль для елегантності
+    fontFamily: 'Georgia, "Times New Roman", Times, serif',
 };
 
 const modalContentStyle = {
@@ -62,25 +58,23 @@ const messageStyle = {
     fontSize: '1rem',
 };
 
-// 🔥 ОНОВЛЕНО: Блок деталей виглядає структуровано
 const detailsContainerStyle = {
-    background: PALETTE.secondary + '20', // Дуже світлий фон з акцентом
+    background: PALETTE.secondary + '20',
     padding: '15px 25px',
     borderRadius: '10px',
     marginBottom: '30px',
     textAlign: 'left',
-    borderLeft: `5px solid ${PALETTE.primary}`, // Елегантний вертикальний акцент
+    borderLeft: `5px solid ${PALETTE.primary}`,
     display: 'flex',
     flexDirection: 'column',
     gap: '8px',
 };
 
-// 🔥 НОВИЙ СТИЛЬ: Стилізація рядка для деталей
 const detailRowStyle = {
     display: 'flex',
     justifyContent: 'space-between',
     padding: '5px 0',
-    borderBottom: `1px dashed ${PALETTE.secondary}`, // Легкий розділювач
+    borderBottom: `1px dashed ${PALETTE.secondary}`,
 };
 
 const labelStyle = {
@@ -91,7 +85,7 @@ const labelStyle = {
 
 const valueStyle = {
     fontWeight: 'bold',
-    color: PALETTE.primary, // Основний колір для виділення важливої інформації
+    color: PALETTE.primary,
     textAlign: 'right',
 };
 
@@ -110,8 +104,6 @@ const okButtonStyle = {
 
 const SuccessModal = ({ data, onClose }) => {
     if (!data) return null;
-
-    // Визначаємо заголовок та повідомлення на основі 'type'
     const isCancellation = data.type === 'cancellation';
     const mainTitle = isCancellation ? 'Скасування Успішне' : 'Запис Успішно Оформлено!';
     const userMessage = isCancellation 
@@ -124,17 +116,13 @@ const SuccessModal = ({ data, onClose }) => {
             <div style={modalContentStyle} onClick={(e) => e.stopPropagation()}>
                 
                 <div style={iconContainerStyle}>
-                    {/* Використовуємо іконку для успіху */}
                     <i className="fas fa-check-circle" style={successIconStyle}></i>
                 </div>
                 
                 <h3 style={titleStyle}>{mainTitle}</h3>
                 
                 <p style={messageStyle} dangerouslySetInnerHTML={{ __html: userMessage.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') }} />
-                
-                {/* 🔥 ОНОВЛЕНИЙ БЛОК ДЕТАЛЕЙ - Тільки якщо це не скасування 
-                    Для скасування деталі візиту не потрібні.
-                */}
+
                 {!isCancellation && (
                     <div style={detailsContainerStyle}>
                         <div style={detailRowStyle}>
@@ -149,7 +137,6 @@ const SuccessModal = ({ data, onClose }) => {
                             <span style={labelStyle}>Дата:</span> 
                             <span style={valueStyle}>{data.date}</span>
                         </div>
-                        {/* Останній елемент без розділювача */}
                         <div style={{...detailRowStyle, borderBottom: 'none'}}> 
                             <span style={labelStyle}>Час:</span> 
                             <span style={valueStyle}>{data.time}</span>
