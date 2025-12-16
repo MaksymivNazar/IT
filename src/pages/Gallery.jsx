@@ -78,7 +78,7 @@ const Gallery = () => {
                 {galleryImages.map((image) => (
                     <div 
                         key={image.id} 
-                        style={{ textAlign: 'left' }} // Контейнер для фото + назва
+                        style={{ textAlign: 'left' }}
                     >
                         **<h4 style={titleStyle}>{image.title}</h4>**
                         <div style={imageWrapperStyle}>
